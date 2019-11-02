@@ -4,8 +4,6 @@ date: 2019-01-27T18:41:58+01:00
 draft: false
 ---
 
-# RE for Beginners Julia - write-up
-
 ## Write-up intro
 Let's make a write-up of the easiest of the easiest reverse engineering challenges (not even entry [CTF](https://ctftime.org/ctf-wtf/) level).  
 
