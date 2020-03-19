@@ -1,0 +1,33 @@
+---
+title: "Hacking buttons"
+date: 2020-03-19
+draft: false
+tags: ["arduino"]
+---
+
+= Hacking buttons
+:imagesdir: /hacking-buttons
+:videosdir: /hacking-buttons
+
+
+== Images
+
+image::buttons-in-stand.jpg[]
+image::buttons-side-1-covered.jpg[]
+image::buttons-side-1-uncovered.jpg[]
+image::buttons-side-2.jpg[]
+image::buttons-soldered-1.jpg[]
+image::buttons-soldered-2.jpg[]
+image::finished.jpg[]
+image::finished.mp4[]
+image::finished-with-battery.jpg[]
+image::opto-1.jpg[]
+image::opto-2.jpg[]
+image::hacking-buttons-schematic.png[]
+
+== Videos
+.Project in action
+video::finished.mp4[]
+
+== Links
+https://www.arduino.cc/documents/datasheets/Optocouplers.pdf[Datasheet link]
