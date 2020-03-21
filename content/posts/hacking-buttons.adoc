@@ -30,7 +30,7 @@ _Nothing_ could be further from the truth.
 However, something is even more baffling.
 Most of the street at which I live is closed by a road barrier
 which could be opened using a remote control.
-There's not point in using it though because past the barrier there're even fewer free parking spaces.
+There's no point in using it though because past the barrier there're even fewer free parking spaces.
 
 Since I do not care about it working, let's play with it using _Arduino_.
 
@@ -40,7 +40,7 @@ The project is based on a project from https://store.arduino.cc/genuino-starter-
 
 === Remote control investigation
 
-This is how back of the opened remote control looks like.
+This is how the back of the opened remote control looks like.
 As you can see, there are no buttons here.
 
 image::buttons-side-2.jpg[]
@@ -119,7 +119,7 @@ The `pressButton` function simulates pressing the button on the remote control.
 Arduino sets pin voltage to _5V_ for 1000 ms (using `delay` function).
 Then pin voltage is being set to _0V_ for a random duration (10 to 60 seconds).
 
-Below there is source code which is also available on https://github.com/matishadow/arduino-starting-kit/blob/master/project-15-hacking-buttons/project-15-hacking-buttons.ino[my github here].
+There is source code below which is also available on https://github.com/matishadow/arduino-starting-kit/blob/master/project-15-hacking-buttons/project-15-hacking-buttons.ino[my github here].
 
 [source, arduino]
 ----
