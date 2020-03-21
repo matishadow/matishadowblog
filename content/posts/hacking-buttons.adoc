@@ -55,7 +55,7 @@ After removing the caps this is how the PCBfootnote:pcb[A printed circuit board 
 image::buttons-side-1-uncovered.jpg[]
 === Soldering
 
-First step is to mount the remote control PCBfootnote:disclaimer[] into the soldering arms.
+First step is to mount the remote control PCBfootnote:pcb[] into the soldering arms.
 
 image::buttons-in-stand.jpg[]
 
