@@ -1,0 +1,76 @@
+---
+title: "Magic box"
+date: 2020-08-06
+draft: false
+tags: ["arduino", "raspberry-pi"]
+:toc:
+
+markup:
+  highlight:
+    codeFences: true
+    guessSyntax: true
+    hl_Lines: ""
+    lineNoStart: 1
+    lineNos: false
+    lineNumbersInTable: true
+    noClasses: true
+    style: arduino
+    tabWidth: 4
+---
+
+= Magic box
+
+== Photos and videos
+
+.Ready and open
+image::https://i.imgur.com/cUBdtgC.jpg[]
+
+.Testing new closed
+image::https://i.imgur.com/XahOfra.jpg[]
+
+.Testing new open
+image::https://i.imgur.com/Rl3XnHZ.jpg[]
+
+.Hole
+image::https://i.imgur.com/fg5aeS9.jpg[]
+
+.Servo inside box
+image::https://i.imgur.com/yNcXb0U.jpg[]
+
+.Conncected to raspberry
+image::https://i.imgur.com/tiTr53o.jpg[]
+
+.Conncected 2
+image::https://i.imgur.com/dz3VcFw.jpg[]
+
+.Connected to serveo
+image::https://i.imgur.com/4w8GaNe.jpg[]
+
+.Raspberry pins
+image::https://i.imgur.com/1DO5x13.jpg[]
+
+.Holes through box
+image::https://i.imgur.com/MgwWMQI.jpg[]
+
+.Finished
+image::https://i.imgur.com/xU9Lzng.jpg[]
+
+.Decorated
+image::https://i.imgur.com/Jz4HUlS.jpg[]
+
+.Through hole
+image::https://i.imgur.com/WjQ3D4B.jpg[]
+
+.Testing and breaking servo
+image::https://i.imgur.com/EDkNs7r.jpg[]
+
+.Video without being glued
+video::https://i.imgur.com/XFqvpu2.mp4[]
+
+.Video final
+video::https://i.imgur.com/v8oKa5Z.mp4[]
+
+== links
+
+https://github.com/matishadow/magic-box[]
+
