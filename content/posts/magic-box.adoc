@@ -20,7 +20,53 @@ markup:
 
 = Magic box
 
-== Photos and videos
+== Make gifts for people
+[quote, John Green]
+____
+Don’t make stuff because you want to make money — it will never make you enough money.
+And don’t make stuff because you want to get famous — because you will never feel famous enough.
+Make gifts for people — and work hard on making those gifts in the hope that those people will notice
+and like the gifts.
+
+Maybe they will notice how hard you worked, and maybe they won’t — and if they don’t notice,
+I know it’s frustrating.
+But, ultimately, that doesn't change anything —
+because your responsibility is not to the people you’re making the gift for, but to the gift itself.
+____
+
+NOTE: Would you like to see a comic depicting this quote?
+Visit https://www.zenpencils.com/comic/119-john-green-make-gifts-for-people/[ZEN PENCILS] to see it!
+
+== Inspiration
+
+https://store.arduino.cc/genuino-starter-kit[ARDUINO STARTER KIT] inspired me once more.
+In https://matishadow-blog.gear.host/posts/hacking-buttons[Hacking buttons] blog post
+I described how I followed the last project from the kit.
+This time I've made my own twist on the original project.
+
+I used `Knock Lock` project to base mine upon.
+It consisted of two components: a `piezo`
+footnote:[A piezo is an electronic device that generates a voltage when it's physically deformed by a vibration,
+sound wave, or mechanicalstrain.
+Similarly, when you put a voltage across a piezo, it vibrates and creates a tone.
+Piezos can be used both to play tones and to detect tones.]
+and a `servo motor`
+footnote:[Device that can turn to a specified position.
+Usually, they have a servo arm that can turn 180 degrees.].
+The project used the servo to open and close a box as shown below.
+
+image::https://i.imgur.com/ekrIGpd.png[]
+
+To decide whether to lock or unlock the box Arduino used the piezo.
+Arduino could _hear_ and count knocks on the piezo.
+If the number of knocks equaled to specific number Arduino opened the box.
+Since knocking seems fun but not secure I decided to create a more interesting solution.
+
+== Making the gift
+
+.Servo, which got destroyed.
+image::https://i.imgur.com/EDkNs7r.jpg[]
+
 
 .Ready and open
 image::https://i.imgur.com/cUBdtgC.jpg[]
@@ -60,9 +106,6 @@ image::https://i.imgur.com/Jz4HUlS.jpg[]
 
 .Through hole
 image::https://i.imgur.com/WjQ3D4B.jpg[]
-
-.Testing and breaking servo
-image::https://i.imgur.com/EDkNs7r.jpg[]
 
 .Video without being glued
 video::https://i.imgur.com/XFqvpu2.mp4[]
