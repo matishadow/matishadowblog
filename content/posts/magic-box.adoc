@@ -42,7 +42,7 @@ Visit https://www.zenpencils.com/comic/119-john-green-make-gifts-for-people/[ZEN
 https://store.arduino.cc/genuino-starter-kit[ARDUINO STARTER KIT] inspired me once more.
 In https://matishadow-blog.gear.host/posts/hacking-buttons[Hacking buttons] blog post
 I described how I followed the last project from the kit.
-This time I've made my own twist on the original project.
+This time I've made my own twist on an original project.
 
 I used `Knock Lock` project to base mine upon.
 It consisted of two components: a `piezo`
@@ -58,18 +58,16 @@ The project used the servo to open and close a box as shown below.
 image::https://i.imgur.com/ekrIGpd.png[]
 
 To decide whether to lock or unlock the box Arduino used the piezo.
-Arduino could _hear_ and count knocks on the piezo.
+Arduino could _hear_ and count down knocks.
 If the number of knocks equaled to specific number Arduino opened the box.
 Since knocking seems fun but not secure I decided to create a more interesting solution.
 
 == Making the gift
 
+=== Testing the servo
+
 .Servo, which got destroyed.
 image::https://i.imgur.com/EDkNs7r.jpg[]
-
-
-.Ready and open
-image::https://i.imgur.com/cUBdtgC.jpg[]
 
 .Testing new closed
 image::https://i.imgur.com/XahOfra.jpg[]
@@ -77,35 +75,41 @@ image::https://i.imgur.com/XahOfra.jpg[]
 .Testing new open
 image::https://i.imgur.com/Rl3XnHZ.jpg[]
 
-.Hole
-image::https://i.imgur.com/fg5aeS9.jpg[]
-
-.Servo inside box
-image::https://i.imgur.com/yNcXb0U.jpg[]
-
-.Conncected to raspberry
-image::https://i.imgur.com/tiTr53o.jpg[]
-
-.Conncected 2
-image::https://i.imgur.com/dz3VcFw.jpg[]
-
-.Connected to serveo
-image::https://i.imgur.com/4w8GaNe.jpg[]
+=== Connection
 
 .Raspberry pins
 image::https://i.imgur.com/1DO5x13.jpg[]
 
+.Connected to raspberry, leds off
+image::https://i.imgur.com/tiTr53o.jpg[]
+
+.Connected to raspberry, leds on
+image::https://i.imgur.com/dz3VcFw.jpg[]
+
+.Connected to both raspberry and servo
+image::https://i.imgur.com/4w8GaNe.jpg[]
+
+=== Battery?
+
+=== Soldering
+.Hole
+image::https://i.imgur.com/fg5aeS9.jpg[]
+
 .Holes through box
 image::https://i.imgur.com/MgwWMQI.jpg[]
 
-.Finished
-image::https://i.imgur.com/xU9Lzng.jpg[]
+=== Decorating
 
-.Decorated
+.Decorated and open
+image::https://i.imgur.com/cUBdtgC.jpg[]
+
+.Decorated and closed
 image::https://i.imgur.com/Jz4HUlS.jpg[]
 
-.Through hole
+.Servo through hole
 image::https://i.imgur.com/WjQ3D4B.jpg[]
+
+=== Magic box in action
 
 .Video without being glued
 video::https://i.imgur.com/XFqvpu2.mp4[]
@@ -113,7 +117,7 @@ video::https://i.imgur.com/XFqvpu2.mp4[]
 .Video final
 video::https://i.imgur.com/v8oKa5Z.mp4[]
 
-== links
+== Link to the repository
 
 https://github.com/matishadow/magic-box[]
 
