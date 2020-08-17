@@ -69,6 +69,8 @@ Since knocking seems fun but not secure I decided to create a more interesting s
 .Servo, which got destroyed.
 image::https://i.imgur.com/EDkNs7r.jpg[]
 
+In perpendicular position the servo would close the box while in parallel the box could open.
+
 .Testing new closed
 image::https://i.imgur.com/XahOfra.jpg[]
 
@@ -92,10 +94,20 @@ image::https://i.imgur.com/4w8GaNe.jpg[]
 === Battery?
 
 === Soldering
-.Hole
+
+I used the good old soldering iron to make necessary holes in the box.
+
+I needed the first hole, so the servo could prevent the box from opening.
+The hole's breadth roughly equals to the servo's width.
+Such measurement enables the servo to freely turn 360 degrees.
+
+.Hole for servo
 image::https://i.imgur.com/fg5aeS9.jpg[]
 
-.Holes through box
+To weave cables through the box I made small holes for each of them.
+It turned out totally unaligned but melting plastic holds far from easy.
+
+.Holes for cables
 image::https://i.imgur.com/MgwWMQI.jpg[]
 
 === Decorating
