@@ -32,17 +32,17 @@ Maybe they will notice how hard you worked, and maybe they won’t — and if th
 I know it’s frustrating.
 But, ultimately, that doesn't change anything —
 because your responsibility is not to the people you’re making the gift for, but to the gift itself.
+footnote:[Would you like to see a comic depicting this quote? Visit https://www.zenpencils.com/comic/119-john-green-make-gifts-for-people/[ZEN PENCILS] to see it!]
 ____
 
-NOTE: Would you like to see a comic depicting this quote?
-Visit https://www.zenpencils.com/comic/119-john-green-make-gifts-for-people/[ZEN PENCILS] to see it!
+
 
 == Inspiration
 
 https://store.arduino.cc/genuino-starter-kit[ARDUINO STARTER KIT] inspired me once more.
 In https://matishadow-blog.gear.host/posts/hacking-buttons[Hacking buttons] blog post
 I described how I followed the last project from the kit.
-This time I've made my own twist on an original project.
+This time I've made my own twist on an original project and made a gift out of it.
 
 I used `Knock Lock` project to base mine upon.
 It consisted of two components: a `piezo`
@@ -63,35 +63,114 @@ If the number of knocks equaled to specific number Arduino opened the box.
 Since knocking seems fun but not secure I decided to create a more interesting solution.
 
 == Making the gift
+Let's make the gift, shall we?
+As it goes with all a bit complicated project I needed to split the project into parts.
 
 === Testing the servo
+
+Firstly I researched how to use the servo.
+I quickly assembled a project, which involved it to recall how to use it.
+Later I removed all the unnecessary parts including capacitors, who needs a smooth motion right?
+
+Unfortunately when trying to glue the yellow part to the actual servo mechanism I destroyed it.
+Some of the glue must have gotten in the mechanism.
+Lesson learnt to use a screw next time!
 
 .Servo, which got destroyed.
 image::https://i.imgur.com/EDkNs7r.jpg[]
 
 In perpendicular position the servo would close the box while in parallel the box could open.
 
-.Testing new closed
+.Testing new servo, closed
 image::https://i.imgur.com/XahOfra.jpg[]
 
-.Testing new open
+.Testing new servo, open
 image::https://i.imgur.com/Rl3XnHZ.jpg[]
 
-=== Connection
+=== Connecting Raspberry and Arduino
 
-.Raspberry pins
+Now let's switch to the harder part of the project.
+
+I used 4 GPIO pins of the Raspberry to send 4 bits of a digit.
+
+.To for example send
+* `4` I needed to set the following cables to these voltage levels:
+    ** image:https://via.placeholder.com/15/ffff00/000000?text=+[] -> `LOW`
+    ** image:https://via.placeholder.com/15/800080/000000?text=+[] -> `LOW`
+    ** image:https://via.placeholder.com/15/ed7014/000000?text=+[] -> `HIGH`
+    ** image:https://via.placeholder.com/15/654321/000000?text=+[] -> `LOW`
+* `9` I needed to set the following cables to these voltage levels:
+    ** image:https://via.placeholder.com/15/ffff00/000000?text=+[] -> `HIGH`
+    ** image:https://via.placeholder.com/15/800080/000000?text=+[] -> `LOW`
+    ** image:https://via.placeholder.com/15/ed7014/000000?text=+[] -> `LOW`
+    ** image:https://via.placeholder.com/15/654321/000000?text=+[] -> `HIGH`
+
+The fifth green cable acted as a clock to notify the Arduino when to read the voltages.
+
+Arduino waited for 4 digits: `2`, `9`, `0` and `7` before opening.
+
+Each green LED indicated a correctly sent digit, yellow LED whether the Arduino listens for input or not.
+
+To open the box automatically I created the following python script:
+
+.open-box.py
+[source, python]
+----
+import os
+import time
+
+os.system("gpio -1 mode 29 OUT && gpio -1 mode 31 OUT && gpio -1 mode 33 OUT && gpio -1 mode 35 OUT && gpio -1 mode 37 OUT")
+os.system("gpio -1 write 37 0")
+
+os.system("gpio -1 write 35 0 && gpio -1 write 33 0 && gpio -1 write 31 1 && gpio -1 write 29 0")
+os.system("gpio -1 write 37 1")
+os.system("gpio -1 write 37 0")
+time.sleep(3);
+
+os.system("gpio -1 write 35 1 && gpio -1 write 33 0 && gpio -1 write 31 0 && gpio -1 write 29 1")
+os.system("gpio -1 write 37 1")
+os.system("gpio -1 write 37 0")
+time.sleep(3);
+
+
+os.system("gpio -1 write 35 0 && gpio -1 write 33 0 && gpio -1 write 31 0 && gpio -1 write 29 0")
+os.system("gpio -1 write 37 1")
+os.system("gpio -1 write 37 0")
+time.sleep(3);
+
+
+os.system("gpio -1 write 35 0 && gpio -1 write 33 1 && gpio -1 write 31 1 && gpio -1 write 29 1")
+os.system("gpio -1 write 37 1")
+os.system("gpio -1 write 37 0")
+time.sleep(3);
+----
+
+.Raspberry GPIO pins
 image::https://i.imgur.com/1DO5x13.jpg[]
 
-.Connected to raspberry, leds off
+.Arduino connected to Raspberry, leds off
 image::https://i.imgur.com/tiTr53o.jpg[]
 
-.Connected to raspberry, leds on
+.Arduino connected to Raspberry, leds on
 image::https://i.imgur.com/dz3VcFw.jpg[]
 
-.Connected to both raspberry and servo
+.Arduino connected to both Raspberry and servo
 image::https://i.imgur.com/4w8GaNe.jpg[]
 
 === Battery?
+Observant reader might spot disappearance of the battery in the last photo.
+Well, the initial plan involved powering the arduino using a 9V battery, but it failed.
+
+
+Arduino booted correctly, and it ran the code just fine, however readings from `analogRead` looked totally off.
+I searched the Internet for similar problems and found something called _common ground issue_.
+Basically to read voltages from Raspberry correctly, I needed to connect both devices to the same ground.
+Luckily I managed to use 5V pin from Raspberry to power the Arduino.
+
+
+Powering the Arduino from Raspberry made both of the devices use the same ground, so I could read the voltages correctly.
+
+https://electronics.stackexchange.com/questions/53925/common-ground-and-voltages[Explanation of the issue here.]
 
 === Soldering
 
@@ -105,12 +184,14 @@ Such measurement enables the servo to freely turn 360 degrees.
 image::https://i.imgur.com/fg5aeS9.jpg[]
 
 To weave cables through the box I made small holes for each of them.
-It turned out totally unaligned but melting plastic holds far from easy.
+It turned out totally unaligned but melting plastic stands far from easy.
 
 .Holes for cables
 image::https://i.imgur.com/MgwWMQI.jpg[]
 
 === Decorating
+
+For the final touch I used some glitter tape to decorate the whole box.
 
 .Decorated and open
 image::https://i.imgur.com/cUBdtgC.jpg[]
@@ -123,10 +204,14 @@ image::https://i.imgur.com/WjQ3D4B.jpg[]
 
 === Magic box in action
 
-.Video without being glued
+First video presents how the project works without any changes to the box.
+
+.Project with servo not glued
 video::https://i.imgur.com/XFqvpu2.mp4[]
 
-.Video final
+Video belows shows the project in its final form.
+
+.Final version of the project
 video::https://i.imgur.com/v8oKa5Z.mp4[]
 
 == Link to the repository
