@@ -95,15 +95,15 @@ I used 4 GPIO pins of the Raspberry to send 4 bits of a digit.
 
 .To for example send
 * `4` I needed to set the following cables to these voltage levels:
-    ** image:https://via.placeholder.com/15/ffff00/000000?text=+[] -> `LOW`
-    ** image:https://via.placeholder.com/15/800080/000000?text=+[] -> `LOW`
-    ** image:https://via.placeholder.com/15/ed7014/000000?text=+[] -> `HIGH`
-    ** image:https://via.placeholder.com/15/654321/000000?text=+[] -> `LOW`
+    ** yellow -> `LOW`
+    ** purple -> `LOW`
+    ** orange -> `HIGH`
+    ** brown -> `LOW`
 * `9` I needed to set the following cables to these voltage levels:
-    ** image:https://via.placeholder.com/15/ffff00/000000?text=+[] -> `HIGH`
-    ** image:https://via.placeholder.com/15/800080/000000?text=+[] -> `LOW`
-    ** image:https://via.placeholder.com/15/ed7014/000000?text=+[] -> `LOW`
-    ** image:https://via.placeholder.com/15/654321/000000?text=+[] -> `HIGH`
+    ** yellow -> `HIGH`
+    ** purple -> `LOW`
+    ** orange -> `LOW`
+    ** brown -> `HIGH`
 
 The fifth green cable acted as a clock to notify the Arduino when to read the voltages.
 
