@@ -4,6 +4,7 @@ date: 2020-03-19
 draft: false
 tags: ["arduino"]
 :toc:
+comments: true
 
 markup:
   highlight:

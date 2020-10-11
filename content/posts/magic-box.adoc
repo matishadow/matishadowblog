@@ -4,6 +4,7 @@ date: 2020-08-06
 draft: false
 tags: ["arduino", "raspberry-pi"]
 :toc:
+comments: true
 
 markup:
   highlight:

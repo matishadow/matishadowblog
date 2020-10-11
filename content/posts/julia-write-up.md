@@ -2,6 +2,7 @@
 title: "RE for Beginners Julia - write-up"
 date: 2019-01-27T18:41:58+01:00
 draft: false
+comments: true
 ---
 
 ## Write-up intro

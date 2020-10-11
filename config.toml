@@ -1,6 +1,7 @@
 baseurl = "/"
 languageCode = "en-uk"
 theme = "hello-friend-ng"
+disqusShortname = "matishadow-blog"
 
 [params]
   dateform        = "Jan 2, 2006"

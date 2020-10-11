@@ -4,6 +4,7 @@ date: 2020-10-10
 draft: false
 tags: ["3d", "3d-printing", "DIY", "tinkercad"]
 :toc:
+comments: true
 ---
 
 == Dishwasher 101
