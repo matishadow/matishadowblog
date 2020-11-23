@@ -1,0 +1,20 @@
+---
+title: "Binary patching - creating Tibia Multiclient"
+date: 2020-11-23
+draft: false
+tags: ["re", "patching", "binary", "reverse-engineering"]
+:toc:
+comments: true
+---
+
+== Mutex links
+
+. https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createmutexa
+. https://docs.microsoft.com/en-us/windows/win32/sync/using-mutex-objects
+. https://stackoverflow.com/questions/3528877/can-someone-explain-mutex-and-how-it-is-used
+. https://nsis.sourceforge.io/mediawiki/index.php?title=Allow_only_one_installer_instance&oldid=22437
+. https://comp.os.ms-windows.programmer.win32.narkive.com/fxybQQtZ/regarding-createmutexa-and-createmutexw
+
+
+
+
