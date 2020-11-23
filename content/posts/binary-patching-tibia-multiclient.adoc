@@ -15,6 +15,13 @@ comments: true
 . https://nsis.sourceforge.io/mediawiki/index.php?title=Allow_only_one_installer_instance&oldid=22437
 . https://comp.os.ms-windows.programmer.win32.narkive.com/fxybQQtZ/regarding-createmutexa-and-createmutexw
 
+== Intro with apologies to cipsodt and history
+== Recon with current screenshots
+== Static analysis attempt
+== X64 debugging
+== Mutex explainaton
+== Patching
+== Result
 
 
 
