@@ -1,5 +1,5 @@
 ---
-title: "Binary patching - creating Tibia Multiclient"
+title: "Binary patching - creating Tibia MultiClient"
 date: 2020-11-23
 draft: false
 tags: ["re", "patching", "binary", "reverse-engineering"]
@@ -7,13 +7,43 @@ tags: ["re", "patching", "binary", "reverse-engineering"]
 comments: true
 ---
 
-== Mutex links
+== Childhood dreams
+During some of my first school years I used to play an MMORPG game.
+It had a reputation for having a lot of cheats for it. 
+(Bad reputation still counts as reputation, right?)
 
-. https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createmutexa
-. https://docs.microsoft.com/en-us/windows/win32/sync/using-mutex-objects
-. https://stackoverflow.com/questions/3528877/can-someone-explain-mutex-and-how-it-is-used
-. https://nsis.sourceforge.io/mediawiki/index.php?title=Allow_only_one_installer_instance&oldid=22437
-. https://comp.os.ms-windows.programmer.win32.narkive.com/fxybQQtZ/regarding-createmutexa-and-createmutexw
+People have created all kinds of software for it. 
+Some small and harmless programs enabled you to change the outfit of your character client-side.
+Others, much clever ones, made trees invisible, so you could see items hidden behind them.
+The most advanced ones (called `bots`) could play the whole game for you.
+
+Despite wide range of cheats, people had hard time choosing. 
+You either had to pay a significant amount of money to buy cheats from a reliable party or 
+download some sketchy `.exe` file and put your account at risk.
+Both options stood far from ideal.
+
+I remember I dreamed about having all the necessary skills to create such cheats all by myself.
+A lot of time had passed since this dreaming, will I live up to my past self's expectations?
+
+== MultiClient?
+image::https://i.ibb.co/4sMQBqK/ss.png[]
+
+== Legal
+
+== Naive attempt without debugger
+== Debugging strategy
+== Patching 
+== Mutex explanation
+
+
+
+
+//Mutex links
+//. https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createmutexa
+//. https://docs.microsoft.com/en-us/windows/win32/sync/using-mutex-objects
+//. https://stackoverflow.com/questions/3528877/can-someone-explain-mutex-and-how-it-is-used
+//. https://nsis.sourceforge.io/mediawiki/index.php?title=Allow_only_one_installer_instance&oldid=22437
+//. https://comp.os.ms-windows.programmer.win32.narkive.com/fxybQQtZ/regarding-createmutexa-and-createmutexw
 
 == Intro with apologies to cipsodt and history
 == Recon with current screenshots
