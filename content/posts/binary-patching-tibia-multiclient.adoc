@@ -30,10 +30,10 @@ image::https://i.ibb.co/4sMQBqK/ss.png[]
 
 == Legal
 I do consider creating cheats to online games as unethical, I really do.
-Why I write about creating such a cheat? 
+Why I write about creating such a cheat then? 
 In my defence, I will write about an old version of the game (`9.44`).
 Current version (`11`) uses anti-cheat mechanism called `BattlEye`, and the described 
-technique does not work in the newest version.
+technique does not work in anymore.
 
 == Naive attempt without debugger
 == Debugging strategy
