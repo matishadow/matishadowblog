@@ -29,8 +29,11 @@ A lot of time had passed since this dreaming, will I live up to my past self's e
 image::https://i.ibb.co/4sMQBqK/ss.png[]
 
 == Legal
-// Crack version: 9.44
-// Current version: 11
+I do consider creating cheats to online games as unethical, I really do.
+Why I write about creating such a cheat? 
+In my defence, I will write about an old version of the game (`9.44`).
+Current version (`11`) uses anti-cheat mechanism called `BattlEye`, and the described 
+technique does not work in the newest version.
 
 == Naive attempt without debugger
 == Debugging strategy
