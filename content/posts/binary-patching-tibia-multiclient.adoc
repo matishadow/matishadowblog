@@ -25,8 +25,16 @@ Both options stood far from ideal.
 I remember I dreamed about having all the necessary skills to create such cheats all by myself.
 A lot of time had passed since this dreaming, will I live up to my past self's expectations?
 
-== MultiClient?
+== MultiClient
+Let's start with something simple.
+Let's start with creating the `MultiClient`. 
+
+Unmodified game client allows you to have only one instance of it running.
+All subsequent clients will display an error message and then shut down.
+
 image::https://i.ibb.co/4sMQBqK/ss.png[]
+
+A `MultiClient` allows running multiple instances of the game client.
 
 == Legal
 I do consider creating cheats to online games as unethical, I really do.
