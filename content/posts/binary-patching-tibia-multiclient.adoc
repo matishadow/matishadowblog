@@ -44,6 +44,34 @@ Current version (`11`) uses anti-cheat mechanism called `BattlEye`, and the desc
 technique does not work in anymore.
 
 == Naive attempt without debugger
+At first, I thought about accomplishing my goal without running the application.
+I wanted to use some decompiler, then patch it and then run it.
+
+I searched for the string from the error message and found only one Cross Reference to it.
+
+image::https://i.imgur.com/hW8qHA0.png[]
+
+Following the Cross Reference I found a big `switch` statement, which probably handles all errors.
+
+image::https://i.imgur.com/CaqZHdG.png[]
+
+I zoomed in to see the error message I searched for.
+
+image::https://i.imgur.com/vJTrry4.png[]
+
+Let's backtrack from here and investigate how the `switch` value might end as `0x1c`.
+Execution jumps to different cases based on `eax` value.
+Value in `eax` basically equals to `arg3` value, decreased by 1.
+To find out the value provided as `arg3` we need to find Cross References of `print_error_message` function.
+
+image::https://i.imgur.com/74LmIJj.png[]
+
+Caller of `print_error_message` provides its `arg2` as the third argument.
+
+image::https://i.imgur.com/Ur1iVN9.png[]
+
+image::https://i.imgur.com/xRULxFg.png[]
+
 == Debugging strategy
 == Patching 
 == Mutex explanation
