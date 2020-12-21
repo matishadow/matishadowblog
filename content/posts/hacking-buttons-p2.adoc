@@ -1,1 +1,7 @@
-.
+== LED remote controller repair
+== Smart stand extension
+=== Existing project
+=== Pi code
+=== Circuit
+
+// Mention prev post
