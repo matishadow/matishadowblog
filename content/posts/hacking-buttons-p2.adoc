@@ -13,3 +13,5 @@ image::https://i.imgur.com/z6UJ529.jpg[]
 
 // github link
 // https://github.com/matishadow/sweet-stand/blob/master/src/detect.sh
+
+Both of them involved use of remote contollers and both turned out pretty small
