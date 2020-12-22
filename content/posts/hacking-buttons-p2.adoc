@@ -5,3 +5,11 @@
 === Circuit
 
 // Mention prev post
+
+image::https://i.imgur.com/9aYPyf7.jpg[]
+image::https://i.imgur.com/pTIh8t8.jpg[]
+image::https://i.imgur.com/l7bfB52.jpg[]
+image::https://i.imgur.com/z6UJ529.jpg[]
+
+// github link
+// https://github.com/matishadow/sweet-stand/blob/master/src/detect.sh
