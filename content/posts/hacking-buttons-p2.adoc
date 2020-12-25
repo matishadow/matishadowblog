@@ -1,12 +1,39 @@
+---
+title: "Hacking buttons - part 2"
+date: 2020-12-22
+draft: false
+tags: ["electronics", "raspberry-pi", "motion-detection", "remote-controllers"]
+:toc:
+comments: true
+---
+
+= Hacking buttons - part 2
+
+In this post I will briefly write about two small projects I recently created.
+Both made use of remote controllers and both ended as pretty small.
+Considering the size, I thought I'd write about them in just one post.
+
 == LED remote controller repair
+
+image::https://i.imgur.com/9aYPyf7.jpg[]
+
+Inspiration for the first one emerged out of necessity.
+One day I decided to repair the LED strip remote controller.
+The top cover, visible on the left, fell off and made it impossible to push any buttons.
+
+In my first attempt I used glue to attach the top cover back on the remote controller.
+Apparently I used too much of the glue because some buttons stopped working after some time.
+I investigated the damage, and the glue somehow covered some button pads on the circuit board.
+I've tried cleaning up the board but quickly gave up fearing I might break the board this way.
+
 == Smart stand extension
 === Existing project
 === Pi code
 === Circuit
+link:/posts/hacking-buttons/[Hacking buttons]
 
 // Mention prev post
 
-image::https://i.imgur.com/9aYPyf7.jpg[]
 image::https://i.imgur.com/pTIh8t8.jpg[]
 image::https://i.imgur.com/l7bfB52.jpg[]
 image::https://i.imgur.com/z6UJ529.jpg[]
@@ -14,6 +41,4 @@ image::https://i.imgur.com/z6UJ529.jpg[]
 // github link
 // https://github.com/matishadow/sweet-stand/blob/master/src/detect.sh
 
-Both of them involved use of remote contollers and both turned out pretty small.
-Considering the size, I thought I'd write about them in just one post.
 
