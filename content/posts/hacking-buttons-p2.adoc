@@ -26,6 +26,14 @@ Apparently I used too much of the glue because some buttons stopped working afte
 I investigated the damage, and the glue somehow covered some button pads on the circuit board.
 I've tried cleaning up the board but quickly gave up fearing I might break the board this way.
 
+Let's salvage what I can and at least repair `ON` and `OFF` buttons.
+To do that I've used two big tactile switches, one red and one blue.
+This kind of switch has four legs and if pressed two side ones get connected.
+In our case the blue button makes two green cables connected, and the red one makes red cables connected.
+I soldered the two green cables to places where the old button pads connect to.
+By doing that I pretty much extended the button pad to a different place.
+Now clicking the big buttons equals to clicking the `ON` and `OFF` button pads.
+
 == Smart stand extension
 === Existing project
 === Pi code
