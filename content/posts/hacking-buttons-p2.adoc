@@ -52,6 +52,8 @@ https://github.com/matishadow/sweet-stand/blob/master/src/main.py[at this link.]
 
 === Extension part
 
+The extension basically automates the process of turning the digital photo frame on and off.
+
 
 === Pi code
 === Circuit
