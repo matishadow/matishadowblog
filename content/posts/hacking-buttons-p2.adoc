@@ -34,8 +34,25 @@ I soldered the two green cables to places where the old button pads connect to.
 By doing that I pretty much extended the button pad to a different place.
 Now clicking the big buttons equals to clicking the `ON` and `OFF` button pads.
 
-== Smart stand extension
+== Smart Stand extension
+
+Second project ended up a lot bigger than the first one.
+It extends a project I've done for my beloved.
+
 === Existing project
+
+_Smart Stand_ project consists of two things.
+It uses a digital photo frame to display photos my beloved took.
+The photos come from a Raspberry Pi Zero, which is connected via HDMI to the digital photo frame.
+The Raspberry not only creates the slideshow using `feh` image viewer but it also downloads the images from a couple of services.
+For now these services include Reddit, Instagram and GuruShots.
+To download the images I created a Python script which Raspberry executes using `cron`.
+I've made the script available in the repository 
+https://github.com/matishadow/sweet-stand/blob/master/src/main.py[at this link.]
+
+=== Extension part
+
+
 === Pi code
 === Circuit
 link:/posts/hacking-buttons/[Hacking buttons]
