@@ -1,0 +1,21 @@
+---
+title: "How not to write tests - TDD in .NET"
+date: 2021-01-28
+draft: false
+tags: ["programming", ".net", "tdd", "unit-testing"]
+:toc:
+comments: true
+---
+
+= How not to write tests — TDD in `.NET`
+
+In this post I will briefly write about two small projects I recently created.
+Both made use of remote controllers and both ended as pretty small.
+Considering the size, I thought I'd write about them in just one post.
+
+== Links
+
+. https://www.youtube.com/watch?v=EZ05e7EMOLM[]
+. https://mtlynch.io/good-developers-bad-tests
+. https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530#ace-g2545694624
+
