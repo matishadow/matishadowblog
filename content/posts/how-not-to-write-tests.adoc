@@ -9,13 +9,268 @@ comments: true
 
 = How not to write tests — TDD in `.NET`
 
-In this post I will briefly write about two small projects I recently created.
-Both made use of remote controllers and both ended as pretty small.
-Considering the size, I thought I'd write about them in just one post.
+== Journey
+=== Writing no tests
+=== Writing tests with everything mocked
+=== Testing in a _BDD_ style
+// mention it's not clean code!
+// unit test where `unit` is module not a class
+// API of a module is project with a couple of public classes
+
+== Proof of concept project
+
+// Use internal keyword to hide implementation
+[source,csharp]
+----
+using System;
+
+namespace TestDrivenExample.ExampleModule.Internal
+{
+    internal class TemperatureArgumentValidator : ITemperatureArgumentValidator
+    {
+        public void ValidateCelsiusToKelvinArgument(double celsiusDegrees)
+        {
+            if (celsiusDegrees < -273.15)
+                throw new ArgumentException("Temperature cannot be below absolute zero.", nameof(celsiusDegrees));
+        }
+    }
+}
+----
+
+// Be able to swap implementations of internal classes using extension method
+[source,csharp]
+----
+using Microsoft.Extensions.DependencyInjection;
+using TestDrivenExample.ExampleModule.Internal;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.ExampleModule.Configuration
+{
+    public static class ServicesConfiguration
+    {
+        public static void AddExampleModule(this IServiceCollection services)
+        {
+            services.AddScoped<ITemperatureConverter, TemperatureConverter>();
+            services.AddScoped<IConversionRates, ConversionRates>();
+            services.AddScoped<IDoubleAdder, DoubleAdder>();
+            services.AddScoped<ITemperatureArgumentValidator, TemperatureArgumentValidator>();
+        }
+    }
+}
+----
+
+// Make classes not coupled by using constructor injection with an IoC container
+[source,csharp]
+----
+using TestDrivenExample.ExampleModule.Internal;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.ExampleModule
+{
+    public class TemperatureConverter : ITemperatureConverter
+    {
+        private readonly IDoubleAdder _doubleAdder;
+        private readonly IConversionRates _conversionRates;
+        private readonly ITemperatureArgumentValidator _temperatureArgumentValidator;
+
+        public TemperatureConverter(
+            IDoubleAdder doubleAdder,
+            IConversionRates conversionRates,
+            ITemperatureArgumentValidator temperatureArgumentValidator)
+        {
+            _doubleAdder = doubleAdder;
+            _conversionRates = conversionRates;
+            _temperatureArgumentValidator = temperatureArgumentValidator;
+        }
+
+        public double ConvertFromCelsiusToKelvin(double celsiusDegrees)
+        {
+            _temperatureArgumentValidator.ValidateCelsiusToKelvinArgument(celsiusDegrees);
+
+            var conversionRate = _conversionRates.GetCelsiusToKelvinConversionRate();
+
+            return _doubleAdder.Add(celsiusDegrees, conversionRate);
+        }
+    }
+}
+----
+
+// Usage module API in controller
+[source,csharp]
+----
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.API.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class WeatherForecastController : ControllerBase
+    {
+        private readonly ITemperatureConverter _temperatureConverter;
+
+        private static readonly string[] Summaries = new[]
+        {
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Scorching"
+        };
+
+        private readonly ILogger<WeatherForecastController> _logger;
+
+        public WeatherForecastController(
+            ILogger<WeatherForecastController> logger,
+            ITemperatureConverter temperatureConverter)
+        {
+            _logger = logger;
+            _temperatureConverter = temperatureConverter;
+        }
+
+        [HttpGet]
+        public IEnumerable<WeatherForecast> Get()
+        {
+            var rng = new Random();
+            return Enumerable.Range(1, 5).Select(index =>
+                {
+                    int r = rng.Next(-20, 55);
+
+                    return new WeatherForecast
+                    {
+                        Date = DateTime.Now.AddDays(index),
+                        TemperatureC = r,
+                        TemperatureKelvins = _temperatureConverter.ConvertFromCelsiusToKelvin(r),
+                        Summary = Summaries[rng.Next(Summaries.Length)]
+                    };
+                })
+                .ToArray();
+        }
+    }
+}
+----
+
+// Usage of module's extension method in Startup.cs
+[source,csharp]
+----
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using TestDrivenExample.ExampleModule.Configuration;
+
+namespace TestDrivenExample.API
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "TestDrivenExample.API", Version = "v1"});
+            });
+
+            services.AddExampleModule();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestDrivenExample.API v1"));
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+        }
+    }
+}
+----
+
+// Usage of IoC container and interface in tests
+[source,csharp]
+----
+using System;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
+using TestDrivenExample.ExampleModule.Configuration;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.Tests
+{
+    public class TemperatureConverterTests
+    {
+        private ITemperatureConverter _temperatureConverter;
+
+        [SetUp]
+        public void Setup()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddExampleModule();
+
+            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            _temperatureConverter = serviceProvider.GetService<ITemperatureConverter>();
+        }
+
+        [TestCase(10, 283.15)]
+        [TestCase(20, 293.15)]
+        [TestCase(100, 373.15)]
+        [TestCase(500, 773.15)]
+        [TestCase(5000, 5273.15)]
+        public void Should_Convert_Degrees_From_Celsius_To_Kelvin(double celsiusDegrees, double expectedResult)
+        {
+            var valueInKelvins = _temperatureConverter.ConvertFromCelsiusToKelvin(celsiusDegrees);
+
+            valueInKelvins.Should().Be(expectedResult);
+        }
+
+        [TestCase(-273.16)]
+        [TestCase(-373.15)]
+        [TestCase(-1000)]
+        public void Should_Throw_Argument_Exception_If_Input_Below_Absolute_Zero(double celsiusDegrees)
+        {
+            Action convertAction = () => _temperatureConverter.ConvertFromCelsiusToKelvin(celsiusDegrees);
+
+            convertAction.Should().Throw<ArgumentException>();
+        }
+    }
+}
+----
 
 == Links
 
 . https://www.youtube.com/watch?v=EZ05e7EMOLM[]
 . https://mtlynch.io/good-developers-bad-tests
 . https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530#ace-g2545694624
+
+=== repo link
+https://github.com/matishadow/TDD-.NET-Example[]
 
