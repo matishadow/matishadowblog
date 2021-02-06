@@ -15,14 +15,15 @@ Nobody starts programming and writes tests right away.
 You always start with a `Hello World` followed by heaps of pretty bad and untestable code.
 (I still remember coding a `Tic-tac-toe` game by writing tons of `ifs` for every possible move.)
 
-Let's fantasize that after just one project everyone discovers the idea of unit testing.
+Let's fantasize, things go different way.
+That after just one project everyone discovers the idea of unit testing.
 Just imagine everyone creates tests for every piece of code they write.
 The software shines, never breaks and nothing can go to
 https://www.reddit.com/r/badcode[/r/badcode].
 Seems like a perfect world.
 
 Unfortunately, just as with code, you can write good unit tests or bad unit tests.
-With code, however, people agree on the definition of good, with unit tests - not so much.
+With code, however, people _agree on the definition of good, with unit tests - not so much._
 
 === Writing tests with everything mocked
 === Testing in a _BDD_ style
