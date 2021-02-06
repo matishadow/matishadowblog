@@ -107,15 +107,35 @@ namespace DIGNDB.App.SmitteStop.Testing.ServiceTest.Gateway
 You gave up? Good!
 The problem arises when we have everything mocked.
 With everything mocked you basically have to write the logic for the mocks.
+The test definitely should not care about this logic.
+It couples the test to the inner implementation details.
+In other words it breaks encapsulation because it exposes classes, which usually you should hide.
 
+Why is it so bad?
+Well, many times when you refactor the code (change implementation details without changing the behavior) the tests break.
+A change, as simple as adding another parameter to one implementation class,
+could break many mocks and in result break many tests.
 
-=== Testing in a _BDD_ style
-// Mention TDD book
-// mention it's not clean code!
-// unit test where `unit` is module not a class
-// API of a module is project with a couple of public classes
+=== Testing in a BDD style
+
+Ian Cooper explores this idea in the following video:
+
+video::EZ05e7EMOLM[youtube]
+
+He also recommends a book:
+https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530[_Test Driven Development: By Example_ by Kent Beck],
+which also explains the basics in-depth.
+
+The general gist is to test only public API of a module and keep the implementation of it private.
+This strategy not only makes you focus on behaviours of your module,
+but it also makes you write fewer tests.
+Your tests will not break that often when they depend on the API because it should not change that often.
+
+Go watch Ian and read Kent's book to understand the topic better.
 
 == Proof of concept project
+
+
 
 // Use internal keyword to hide implementation
 [source,csharp]
