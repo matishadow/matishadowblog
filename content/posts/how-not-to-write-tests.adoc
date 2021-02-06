@@ -31,6 +31,8 @@ Not only me but my whole team tried to write numerous tests.
 
 Don't get me wrong, these tests surely helped spot many nasty bugs, but most of them had major issue in them.
 
+I bet 10 monies that you cannot find the issue.
+
 .Example of an unit test I wrote in my previous job
 [source,csharp]
 ----
@@ -101,6 +103,11 @@ namespace DIGNDB.App.SmitteStop.Testing.ServiceTest.Gateway
     }
 }
 ----
+
+You gave up? Good!
+The problem arises when we have everything mocked.
+With everything mocked you basically have to write the logic for the mocks.
+
 
 === Testing in a _BDD_ style
 // Mention TDD book
