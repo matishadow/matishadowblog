@@ -135,9 +135,11 @@ Go watch Ian and read Kent's book to understand the topic better.
 
 == Proof of concept project
 
+Now time for the example.
 
+Firstly you need to decide, which classes represent the API and, which represent implementation details.
+Mark API classes as `public` and for implementation classes use the `internal` keyword.
 
-// Use internal keyword to hide implementation
 [source,csharp]
 ----
 using System;
@@ -155,7 +157,12 @@ namespace TestDrivenExample.ExampleModule.Internal
 }
 ----
 
-// Be able to swap implementations of internal classes using extension method
+How to use those `internal` classes when using an _IoC container_?
+Extension methods come to rescue.
+Each module could expose an extension method for registering its internal classes to the container.
+`AddExampleModule(this IServiceCollection services)` would add all the
+classes for `ExampleModule` module.
+
 [source,csharp]
 ----
 using Microsoft.Extensions.DependencyInjection;
@@ -177,7 +184,9 @@ namespace TestDrivenExample.ExampleModule.Configuration
 }
 ----
 
-// Make classes not coupled by using constructor injection with an IoC container
+By using an `IoC container` with the `internal` classes, they don't get coupled to the
+API classes (`TemperatureConverter` in this case.).
+
 [source,csharp]
 ----
 using TestDrivenExample.ExampleModule.Internal;
@@ -213,7 +222,8 @@ namespace TestDrivenExample.ExampleModule
 }
 ----
 
-// Usage module API in controller
+You can later use this API class in any framework e.g., `.NET WebAPI`.
+
 [source,csharp]
 ----
 using System;
@@ -269,7 +279,8 @@ namespace TestDrivenExample.API.Controllers
 }
 ----
 
-// Usage of module's extension method in Startup.cs
+To register the module's classes just call `services.AddExampleModule();` on the container object.
+
 [source,csharp]
 ----
 using System;
@@ -332,7 +343,14 @@ namespace TestDrivenExample.API
 }
 ----
 
-// Usage of IoC container and interface in tests
+Lastly let's look at the tests.
+To test an API class from a module just call the extension method of the module:
+`serviceCollection.AddExampleModule();` and then just ask the container to
+initialize the class under test by calling `serviceProvider.GetService<ITemperatureConverter>();`.
+
+Some might say that interacting with an _IoC Container_ is an overkill, but it has another benefit.
+With the container, you don't have to call the constructor in the test code so adding a new dependency via constructor injection won't break the tests.
+
 [source,csharp]
 ----
 using System;
@@ -383,14 +401,6 @@ namespace TestDrivenExample.Tests
 }
 ----
 
-
-
-== Links
-
-. https://www.youtube.com/watch?v=EZ05e7EMOLM[]
-. https://mtlynch.io/good-developers-bad-tests
-. https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530#ace-g2545694624
-
-=== repo link
+=== Repository with the presented code
 https://github.com/matishadow/TDD-.NET-Example[]
 
