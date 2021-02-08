@@ -11,9 +11,9 @@ comments: true
 
 == Journey
 === Writing no tests
-Nobody starts programming and writes tests right away.
+Nobody starts programming with writing tests right away.
 You always start with a `Hello World` followed by heaps of pretty bad and untestable code.
-(I still remember coding a `Tic-tac-toe` game by writing tons of `ifs` for every possible move.)
+(I still remember coding a `Tic-tac-toe` game by writing thousands of `ifs` for every possible move.)
 
 Let's fantasize, things go different way.
 That after just one project everyone discovers the idea of unit testing.
@@ -27,11 +27,11 @@ With code, however, people _agree on the definition of good, with unit tests - n
 
 === Writing tests with everything mocked
 During half a year of work in my previous company I used to write many tests.
-Not only me but my whole team tried to write numerous tests.
+Not only me but my whole team tried to write as many tests as possible.
 
-Don't get me wrong, these tests surely helped spot many nasty bugs, but most of them had major issue in them.
+Don't get me wrong, these tests surely helped with spotting many nasty bugs, but most of them had one major issue in them.
 
-I bet 10 monies that you cannot find the issue.
+> I bet 10 monies that you cannot find the issue.
 
 .Example of an unit test I wrote in my previous job
 [source,csharp]
@@ -105,8 +105,8 @@ namespace DIGNDB.App.SmitteStop.Testing.ServiceTest.Gateway
 ----
 
 You gave up? Good!
-The problem arises when we have everything mocked.
-With everything mocked you basically have to write the logic for the mocks.
+The problem emerges when we have everything mocked.
+With everything mocked you basically have to write too much logic for the mocks.
 The test definitely should not care about this logic.
 It couples the test to the inner implementation details.
 In other words it breaks encapsulation because it exposes classes, which usually you should hide.
@@ -116,7 +116,14 @@ Well, many times when you refactor the code (change implementation details witho
 A change, as simple as adding another parameter to one implementation class,
 could break many mocks and in result break many tests.
 
+It happened to me so many times that I started wondering _am I doing something wrong?_.
+
 === Testing in a BDD style
+
+The general gist is to test only public API of a module and keep the implementation details private.
+This strategy not only makes you focus on behaviours of your module (requirements),
+but it also makes you write fewer tests.
+Your tests will not break that often when they depend on the API because it should not change that often.
 
 Ian Cooper explores this idea in the following video:
 
@@ -124,12 +131,7 @@ video::EZ05e7EMOLM[youtube]
 
 He also recommends a book:
 https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530[_Test Driven Development: By Example_ by Kent Beck],
-which also explains the basics in-depth.
-
-The general gist is to test only public API of a module and keep the implementation of it private.
-This strategy not only makes you focus on behaviours of your module,
-but it also makes you write fewer tests.
-Your tests will not break that often when they depend on the API because it should not change that often.
+which also explains this idea in-depth.
 
 Go watch Ian and read Kent's book to understand the topic better.
 
@@ -184,7 +186,7 @@ namespace TestDrivenExample.ExampleModule.Configuration
 }
 ----
 
-By using an `IoC container` with the `internal` classes, they don't get coupled to the
+By using an _IoC container_ with the `internal` classes, they don't get coupled to the
 API classes (`TemperatureConverter` in this case.).
 
 [source,csharp]
@@ -350,6 +352,11 @@ initialize the class under test by calling `serviceProvider.GetService<ITemperat
 
 Some might say that interacting with an _IoC Container_ is an overkill, but it has another benefit.
 With the container, you don't have to call the constructor in the test code so adding a new dependency via constructor injection won't break the tests.
+
+What about those internal classes?
+How to test them if you marked them as `internal`?
+You do not need to test them, the container will initialize them if needed, and the tests
+of API classes will cover them by the way.
 
 [source,csharp]
 ----
