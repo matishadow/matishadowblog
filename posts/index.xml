@@ -1,0 +1,1729 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Security and programming stuff</title><link>/posts/</link><description>Recent content in Posts on Security and programming stuff</description><generator>Hugo -- gohugo.io</generator><language>en-uk</language><lastBuildDate>Thu, 28 Jan 2021 00:00:00 +0000</lastBuildDate><atom:link href="/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>How not to write tests - TDD in .NET</title><link>/posts/how-not-to-write-tests/</link><pubDate>Thu, 28 Jan 2021 00:00:00 +0000</pubDate><guid>/posts/how-not-to-write-tests/</guid><description>Journey Writing no tests Nobody starts programming with writing tests right away. You always start with a Hello World followed by heaps of pretty bad and untestable code. (I still remember coding a Tic-tac-toe game by writing thousands of ifs for every possible move.)
+Let’s fantasize, things go different way. That after just one project everyone discovers the idea of unit testing. Just imagine everyone creates tests for every piece of code they write.</description><content type="html"><![CDATA[<div class="sect1">
+<h2 id="_journey">Journey</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_writing_no_tests">Writing no tests</h3>
+<div class="paragraph">
+<p>Nobody starts programming with writing tests right away.
+You always start with a <code>Hello World</code> followed by heaps of pretty bad and untestable code.
+(I still remember coding a <code>Tic-tac-toe</code> game by writing thousands of <code>ifs</code> for every possible move.)</p>
+</div>
+<div class="paragraph">
+<p>Let’s fantasize, things go different way.
+That after just one project everyone discovers the idea of unit testing.
+Just imagine everyone creates tests for every piece of code they write.
+The software shines, never breaks and nothing can go to
+<a href="https://www.reddit.com/r/badcode">/r/badcode</a>.
+Seems like a perfect world.</p>
+</div>
+<div class="paragraph">
+<p>Unfortunately, just as with code, you can write good unit tests or bad unit tests.
+With code, however, people <em>agree on the definition of good, with unit tests - not so much.</em></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_writing_tests_with_everything_mocked">Writing tests with everything mocked</h3>
+<div class="paragraph">
+<p>During half a year of work in my previous company I used to write many tests.
+Not only me but my whole team tried to write as many tests as possible.</p>
+</div>
+<div class="paragraph">
+<p>Don’t get me wrong, these tests surely helped with spotting many nasty bugs, but most of them had one major issue in them.</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>I bet 10 monies that you cannot find the issue.</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">Example of an unit test I wrote in my previous job</div>
+<div class="content">
+<pre class="highlight"><code class="language-csharp" data-lang="csharp">using FederationGatewayApi.Services;
+using FluentAssertions;
+using Moq;
+using NUnit.Framework;
+using System;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+
+namespace DIGNDB.App.SmitteStop.Testing.ServiceTest.Gateway
+{
+    [TestFixture]
+    public class GatewayKeyProviderTests
+    {
+        private readonly Mock&lt;IX509StoreWrapper&gt; _x509StoreWrapperMock = new Mock&lt;IX509StoreWrapper&gt;();
+        private readonly Mock&lt;ISha256Wrapper&gt; _sha256WrapperMock = new Mock&lt;ISha256Wrapper&gt;();
+        private readonly Mock&lt;IBitConverterWrapper&gt; _bitConverterWrapperMock = new Mock&lt;IBitConverterWrapper&gt;();
+        private readonly Mock&lt;IPrivateKeyFactoryWrapper&gt; _privateKeyFactoryWrapperMock = new Mock&lt;IPrivateKeyFactoryWrapper&gt;();
+        private readonly Mock&lt;IX509CertificateParserWrapper&gt; _x509CertificateParserWrapperMock = new Mock&lt;IX509CertificateParserWrapper&gt;();
+
+        private const string AuthenticationCertificateFingerprint = &#34;A3C3E533CC9FEACA026F99F688F4488B5FC16BD0E6A80E6E0FC03760983DBF3F&#34;;
+        private const string SigningCertificateFingerprint = &#34;979673B55DB0B7E2B35B12CF2A342655F059314BC46323C43BCD3BFC82374BFB&#34;;
+
+        [Test]
+        public void Should_Read_Certificates_From_UserStore_First_Then_Local_Machine()
+        {
+            int callOrder = 0;
+
+            _x509StoreWrapperMock.Setup(mock =&gt; mock.Initialize(StoreName.My, StoreLocation.CurrentUser))
+                .Callback(() =&gt;
+                {
+                    callOrder++;
+                    callOrder.Should().Be(1);
+                });
+            _x509StoreWrapperMock.Setup(mock =&gt; mock.Initialize(StoreName.My, StoreLocation.LocalMachine))
+                .Callback(() =&gt;
+                {
+                    callOrder++;
+                    callOrder.Should().Be(2);
+                });
+
+            try
+            {
+                var gatewayKeyProvider = new GatewayKeyProvider(
+                    AuthenticationCertificateFingerprint,
+                    SigningCertificateFingerprint,
+                    _x509StoreWrapperMock.Object,
+                    _sha256WrapperMock.Object,
+                    _bitConverterWrapperMock.Object,
+                    _privateKeyFactoryWrapperMock.Object,
+                    _x509CertificateParserWrapperMock.Object);
+            }
+            catch (AssertionException)
+            {
+                throw;
+            }
+            catch (CryptographicException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                // ignored because testing only interaction with X509Store
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You gave up? Good!
+The problem emerges when we have everything mocked.
+With everything mocked you basically have to write too much logic for the mocks.
+The test definitely should not care about this logic.
+It couples the test to the inner implementation details.
+In other words it breaks encapsulation because it exposes classes, which usually you should hide.</p>
+</div>
+<div class="paragraph">
+<p>Why is it so bad?
+Well, many times when you refactor the code (change implementation details without changing the behavior) the tests break.
+A change, as simple as adding another parameter to one implementation class,
+could break many mocks and in result break many tests.</p>
+</div>
+<div class="paragraph">
+<p>It happened to me so many times that I started wondering <em>am I doing something wrong?</em>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_in_a_bdd_style">Testing in a BDD style</h3>
+<div class="paragraph">
+<p>The general gist is to test only public API of a module and keep the implementation details private.
+This strategy not only makes you focus on behaviours of your module (requirements),
+but it also makes you write fewer tests.
+Your tests will not break that often when they depend on the API because it should not change that often.</p>
+</div>
+<div class="paragraph">
+<p>Ian Cooper explores this idea in the following video:</p>
+</div>
+<div class="videoblock">
+<div class="content">
+<iframe src="https://www.youtube.com/embed/EZ05e7EMOLM?rel=0" frameborder="0" allowfullscreen=""></iframe>
+</div>
+</div>
+<div class="paragraph">
+<p>He also recommends a book:
+<a href="https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530"><em>Test Driven Development: By Example</em> by Kent Beck</a>,
+which also explains this idea in-depth.</p>
+</div>
+<div class="paragraph">
+<p>Go watch Ian and read Kent’s book to understand the topic better.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proof_of_concept_project">Proof of concept project</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now time for the example.</p>
+</div>
+<div class="paragraph">
+<p>Firstly you need to decide, which classes represent the API and, which represent implementation details.
+Mark API classes as <code>public</code> and for implementation classes use the <code>internal</code> keyword.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-csharp" data-lang="csharp">using System;
+
+namespace TestDrivenExample.ExampleModule.Internal
+{
+    internal class TemperatureArgumentValidator : ITemperatureArgumentValidator
+    {
+        public void ValidateCelsiusToKelvinArgument(double celsiusDegrees)
+        {
+            if (celsiusDegrees &lt; -273.15)
+                throw new ArgumentException(&#34;Temperature cannot be below absolute zero.&#34;, nameof(celsiusDegrees));
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>How to use those <code>internal</code> classes when using an <em>IoC container</em>?
+Extension methods come to rescue.
+Each module could expose an extension method for registering its internal classes to the container.
+<code>AddExampleModule(this IServiceCollection services)</code> would add all the
+classes for <code>ExampleModule</code> module.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-csharp" data-lang="csharp">using Microsoft.Extensions.DependencyInjection;
+using TestDrivenExample.ExampleModule.Internal;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.ExampleModule.Configuration
+{
+    public static class ServicesConfiguration
+    {
+        public static void AddExampleModule(this IServiceCollection services)
+        {
+            services.AddScoped&lt;ITemperatureConverter, TemperatureConverter&gt;();
+            services.AddScoped&lt;IConversionRates, ConversionRates&gt;();
+            services.AddScoped&lt;IDoubleAdder, DoubleAdder&gt;();
+            services.AddScoped&lt;ITemperatureArgumentValidator, TemperatureArgumentValidator&gt;();
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By using an <em>IoC container</em> with the <code>internal</code> classes, they don’t get coupled to the
+API classes (<code>TemperatureConverter</code> in this case.).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-csharp" data-lang="csharp">using TestDrivenExample.ExampleModule.Internal;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.ExampleModule
+{
+    public class TemperatureConverter : ITemperatureConverter
+    {
+        private readonly IDoubleAdder _doubleAdder;
+        private readonly IConversionRates _conversionRates;
+        private readonly ITemperatureArgumentValidator _temperatureArgumentValidator;
+
+        public TemperatureConverter(
+            IDoubleAdder doubleAdder,
+            IConversionRates conversionRates,
+            ITemperatureArgumentValidator temperatureArgumentValidator)
+        {
+            _doubleAdder = doubleAdder;
+            _conversionRates = conversionRates;
+            _temperatureArgumentValidator = temperatureArgumentValidator;
+        }
+
+        public double ConvertFromCelsiusToKelvin(double celsiusDegrees)
+        {
+            _temperatureArgumentValidator.ValidateCelsiusToKelvinArgument(celsiusDegrees);
+
+            var conversionRate = _conversionRates.GetCelsiusToKelvinConversionRate();
+
+            return _doubleAdder.Add(celsiusDegrees, conversionRate);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can later use this API class in any framework e.g., <code>.NET WebAPI</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-csharp" data-lang="csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.API.Controllers
+{
+    [ApiController]
+    [Route(&#34;[controller]&#34;)]
+    public class WeatherForecastController : ControllerBase
+    {
+        private readonly ITemperatureConverter _temperatureConverter;
+
+        private static readonly string[] Summaries = new[]
+        {
+            &#34;Freezing&#34;, &#34;Bracing&#34;, &#34;Chilly&#34;, &#34;Cool&#34;, &#34;Mild&#34;, &#34;Warm&#34;, &#34;Balmy&#34;, &#34;Hot&#34;, &#34;Scorching&#34;
+        };
+
+        private readonly ILogger&lt;WeatherForecastController&gt; _logger;
+
+        public WeatherForecastController(
+            ILogger&lt;WeatherForecastController&gt; logger,
+            ITemperatureConverter temperatureConverter)
+        {
+            _logger = logger;
+            _temperatureConverter = temperatureConverter;
+        }
+
+        [HttpGet]
+        public IEnumerable&lt;WeatherForecast&gt; Get()
+        {
+            var rng = new Random();
+            return Enumerable.Range(1, 5).Select(index =&gt;
+                {
+                    int r = rng.Next(-20, 55);
+
+                    return new WeatherForecast
+                    {
+                        Date = DateTime.Now.AddDays(index),
+                        TemperatureC = r,
+                        TemperatureKelvins = _temperatureConverter.ConvertFromCelsiusToKelvin(r),
+                        Summary = Summaries[rng.Next(Summaries.Length)]
+                    };
+                })
+                .ToArray();
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To register the module’s classes just call <code>services.AddExampleModule();</code> on the container object.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-csharp" data-lang="csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using TestDrivenExample.ExampleModule.Configuration;
+
+namespace TestDrivenExample.API
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllers();
+            services.AddSwaggerGen(c =&gt;
+            {
+                c.SwaggerDoc(&#34;v1&#34;, new OpenApiInfo {Title = &#34;TestDrivenExample.API&#34;, Version = &#34;v1&#34;});
+            });
+
+            services.AddExampleModule();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c =&gt; c.SwaggerEndpoint(&#34;/swagger/v1/swagger.json&#34;, &#34;TestDrivenExample.API v1&#34;));
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =&gt; { endpoints.MapControllers(); });
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Lastly let’s look at the tests.
+To test an API class from a module just call the extension method of the module:
+<code>serviceCollection.AddExampleModule();</code> and then just ask the container to
+initialize the class under test by calling <code>serviceProvider.GetService&lt;ITemperatureConverter&gt;();</code>.</p>
+</div>
+<div class="paragraph">
+<p>Some might say that interacting with an <em>IoC Container</em> is an overkill, but it has another benefit.
+With the container, you don’t have to call the constructor in the test code so adding a new dependency via constructor injection won’t break the tests.</p>
+</div>
+<div class="paragraph">
+<p>What about those internal classes?
+How to test them if you marked them as <code>internal</code>?
+You do not need to test them, the container will initialize them if needed, and the tests
+of API classes will cover them by the way.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-csharp" data-lang="csharp">using System;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
+using TestDrivenExample.ExampleModule.Configuration;
+using TestDrivenExample.ExampleModule.PublicClasses;
+
+namespace TestDrivenExample.Tests
+{
+    public class TemperatureConverterTests
+    {
+        private ITemperatureConverter _temperatureConverter;
+
+        [SetUp]
+        public void Setup()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddExampleModule();
+
+            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            _temperatureConverter = serviceProvider.GetService&lt;ITemperatureConverter&gt;();
+        }
+
+        [TestCase(10, 283.15)]
+        [TestCase(20, 293.15)]
+        [TestCase(100, 373.15)]
+        [TestCase(500, 773.15)]
+        [TestCase(5000, 5273.15)]
+        public void Should_Convert_Degrees_From_Celsius_To_Kelvin(double celsiusDegrees, double expectedResult)
+        {
+            var valueInKelvins = _temperatureConverter.ConvertFromCelsiusToKelvin(celsiusDegrees);
+
+            valueInKelvins.Should().Be(expectedResult);
+        }
+
+        [TestCase(-273.16)]
+        [TestCase(-373.15)]
+        [TestCase(-1000)]
+        public void Should_Throw_Argument_Exception_If_Input_Below_Absolute_Zero(double celsiusDegrees)
+        {
+            Action convertAction = () =&gt; _temperatureConverter.ConvertFromCelsiusToKelvin(celsiusDegrees);
+
+            convertAction.Should().Throw&lt;ArgumentException&gt;();
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_repository_with_the_presented_code">Repository with the presented code</h3>
+<div class="paragraph">
+<p><a href="https://github.com/matishadow/TDD-.NET-Example" class="bare">https://github.com/matishadow/TDD-.NET-Example</a></p>
+</div>
+</div>
+</div>
+</div>
+]]></content></item><item><title>Hacking buttons - part 2</title><link>/posts/hacking-buttons-p2/</link><pubDate>Tue, 22 Dec 2020 00:00:00 +0000</pubDate><guid>/posts/hacking-buttons-p2/</guid><description>In this post I will briefly write about two small projects I recently created. Both made use of remote controllers and both ended as pretty small. Considering the size, I thought I’d write about them in just one post.
+LED remote controller repair Inspiration for the first project emerged out of necessity. One day I decided to repair the LED strip remote controller. The top cover, visible on the left, fell off and made it impossible to push any buttons.</description><content type="html"><![CDATA[<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this post I will briefly write about two small projects I recently created.
+Both made use of remote controllers and both ended as pretty small.
+Considering the size, I thought I’d write about them in just one post.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_led_remote_controller_repair">LED remote controller repair</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/9aYPyf7.jpg" alt="9aYPyf7"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Inspiration for the first project emerged out of necessity.
+One day I decided to repair the LED strip remote controller.
+The top cover, visible on the left, fell off and made it impossible to push any buttons.</p>
+</div>
+<div class="paragraph">
+<p>In my first attempt I used glue to attach the top cover back on the remote controller.
+Apparently I used too much of the glue because some buttons stopped working after some time.
+I investigated the damage, and the glue somehow covered some button pads on the circuit board.
+I’ve tried cleaning up the board but quickly gave up fearing I might break the board this way.</p>
+</div>
+<div class="paragraph">
+<p>Let’s salvage what I can and at least repair <code>ON</code> and <code>OFF</code> buttons.
+To do that I’ve used two big tactile switches, one red and one blue.
+This kind of switch has four legs and if pressed two side ones get connected.
+In our case the blue button makes two green cables connected, and the red one makes red cables connected.
+I soldered the two green cables to places where the old button pads connect to.
+By doing that I pretty much extended the button pad to a different place.
+Now clicking the big buttons equals to clicking the <code>ON</code> and <code>OFF</code> button pads.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_smart_stand_extension">Smart Stand extension</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Second project ended up a lot bigger than the first one.
+It extends a project I’ve created for my beloved.</p>
+</div>
+<div class="sect2">
+<h3 id="_existing_project">Existing project</h3>
+<div class="paragraph">
+<p><em>Smart Stand</em> project consists of two things.
+It uses a digital photo frame to display photos my beloved took.
+The photos come from a Raspberry Pi Zero, which I connected via HDMI to the digital photo frame.
+The Raspberry not only creates the slideshow using <code>feh</code> image viewer,
+but it also downloads the images from a couple of services.
+For now these services include Reddit, Instagram
+<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup>
+and GuruShots.
+To download the images I created a Python script, which Raspberry executes using <code>cron</code>.
+I’ve made the script available in the repository
+<a href="https://github.com/matishadow/sweet-stand/blob/master/src/main.py">at this link.</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_extension_part">Extension part</h3>
+<div class="paragraph">
+<p>The extension basically automates the process of turning the digital photo frame on and off.
+Instead of doing it manually, Raspberry turns the frame on when it sees a person nearby.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_circuit">Circuit</h3>
+<div class="paragraph">
+<p>The circuit consists of a motion detecting module (<code>PIR HC-SR501</code> model), optocoupler and a remote controller.</p>
+</div>
+<div class="paragraph">
+<p>PIR Motion Sensor expands to Pyroelectric (&#34;Passive&#34;) InfraRed Sensor.
+It senses IR light, which changes if something warm appears in front of the sensor.
+Something warm usually takes a form of a human, or an animal detected.
+<a href="https://learn.adafruit.com/pir-passive-infrared-proximity-motion-sensor/how-pirs-work">This site</a>
+explains more thoroughly how this sensor works.</p>
+</div>
+<div class="paragraph">
+<p>I will also not go into too much detail about how the optocoupler works since I’ve already explained it in my first post -
+<a href="/posts/hacking-buttons/">Hacking buttons</a>.
+In short, I used it to programatically click the <code>ON/OFF</code> button on the remote controller.</p>
+</div>
+<div class="paragraph">
+<p>I couldn’t think of a more elegant way of turning the photo frame <code>ON</code> other than using the remote controller.
+I did not want to modify the photo frame because the casing did not have any screws or easy way to open it.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/pTIh8t8.jpg" alt="pTIh8t8"/>
+</div>
+<div class="title">Figure 1. Motion detector and the optocoupler soldered to a small prototyping board.</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/l7bfB52.jpg" alt="l7bfB52"/>
+</div>
+<div class="title">Figure 2. The board connected to the Raspberry Pi.</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/z6UJ529.jpg" alt="z6UJ529"/>
+</div>
+<div class="title">Figure 3. The board connected to the Raspberry Pi and to the remote controller.</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pi_code">Pi code</h3>
+<div class="paragraph">
+<p>I needed to create a pretty simple code but instead of sticking to Python I thought about using bash.</p>
+</div>
+<div class="paragraph">
+<p>The Raspberry would receive the signal from the detector via the brown cable (the middle one).
+The detector would send <code>1</code> if it detected motion and keep sending <code>1</code> if after some time the motion persists.
+It’d send <code>0</code> when after some time it’d see no motion.</p>
+</div>
+<div class="paragraph">
+<p>Unfortunately I have no way to detect whether the frame turned <code>ON</code> or <code>OFF</code>.
+I can only blindly click the <code>ON/OFF</code> button (using the optocoupler).
+For simplicity, I had to assume that initially the frame starts in <code>OFF</code> state.</p>
+</div>
+<div class="paragraph">
+<p>The code has two variables representing the <code>ON/OFF</code> state, <code>previous</code> and <code>current</code>.
+Initially I set <code>previous</code> to <code>0</code> because I assume the <code>OFF</code> state.
+Using <code>gpio</code> tool I read the output of the motion detector to the <code>current</code> variable.
+If the two variables differ, it means one of two things.
+Either the output from the detector went from <code>0</code> to <code>1</code> - from no motion to motion,
+or it went from <code>1</code> to <code>0</code> - from motion to no motion.
+In first scenario some motion appeared, and we want to turn the frame <code>ON</code>.
+In the second the motion disappeared, and we want to turn the frame <code>OFF</code>.
+In both scenarios we want to press the <code>ON/OFF</code> button to turn the frame <code>ON</code> and <code>OFF</code> respectively.
+I send <code>0</code>, <code>1</code> for half a second and <code>0</code> to the optocoupler to simulate pressing the button.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/matishadow/sweet-stand/blob/master/src/detect.sh">Click here</a>
+to view this bash code.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr/>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. Go and follow her <a href="https://www.instagram.com/dominasijejaparat/">here</a>!
+</div>
+</div>
+]]></content></item><item><title>Binary patching - creating Tibia MultiClient</title><link>/posts/binary-patching-tibia-multiclient/</link><pubDate>Mon, 23 Nov 2020 00:00:00 +0000</pubDate><guid>/posts/binary-patching-tibia-multiclient/</guid><description>Childhood dreams During some of my first school years I used to play an MMORPG game. It had a reputation for having a lot of cheats for it. (Bad reputation still counts as reputation, right?)
+People have created all kinds of software for it. Some small and harmless programs enabled you to change the outfit of your character client-side. Others, much clever ones, made trees invisible, so you could see items hidden behind them.</description><content type="html"><![CDATA[<div class="sect1">
+<h2 id="_childhood_dreams">Childhood dreams</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>During some of my first school years I used to play an MMORPG game.
+It had a reputation for having a lot of cheats for it.
+(Bad reputation still counts as reputation, right?)</p>
+</div>
+<div class="paragraph">
+<p>People have created all kinds of software for it.
+Some small and harmless programs enabled you to change the outfit of your character client-side.
+Others, much clever ones, made trees invisible, so you could see items hidden behind them.
+The most advanced ones (called <code>bots</code>) could play the whole game for you.</p>
+</div>
+<div class="paragraph">
+<p>Despite wide range of cheats, people had hard time choosing.
+You either had to pay a significant amount of money to buy cheats from a reliable party or
+download some sketchy <code>.exe</code> file and put your account at risk.
+Both options stood far from ideal.</p>
+</div>
+<div class="paragraph">
+<p>I remember I dreamed about having all the necessary skills to create such cheats all by myself.
+A lot of time had passed since this dreaming, will I live up to my past self’s expectations?</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_multiclient">MultiClient</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let’s start with creating something simple.
+Let’s start with the <code>MultiClient</code>.</p>
+</div>
+<div class="paragraph">
+<p>What is a <code>MultiClient</code>?
+Well.
+Unmodified game client allows you to have only one instance of it running.
+All subsequent clients will display an error message and then shut down.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.ibb.co/4sMQBqK/ss.png" alt="ss" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>A <code>MultiClient</code> just allows running multiple instances of the game client.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_legal">Legal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>I do consider creating cheats to online games as unethical, I really do.
+Why I write about creating such a cheat then?
+In my defence, I will write about an old version of the game (<code>9.44</code>).
+Current version (<code>11</code>) uses anti-cheat mechanism called <code>BattlEye</code>, and the described
+technique does not work in it anymore.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_naive_attempt_without_debugger">Naive attempt without debugger</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>At first, I thought I could achieve my goal without running the application.
+I wanted to use some decompiler, then patch it and then run it.</p>
+</div>
+<div class="paragraph">
+<p>I searched for the string from the error message and found only one Cross Reference to it.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/hW8qHA0.png" alt="hW8qHA0" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Following the Cross Reference I found a big <code>switch</code> statement, which probably handles all the errors.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/CaqZHdG.png" alt="CaqZHdG" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I zoomed in to see the error message I searched for.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/vJTrry4.png" alt="vJTrry4" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Let’s backtrack from here and investigate how the <code>switch</code> value might end as <code>0x1c</code>.
+Execution jumps to different cases based on <code>eax</code> value.
+This value basically equals to <code>arg3</code> value, decreased by 1.
+To find out the value provided as <code>arg3</code> we need to find Cross References of <code>print_error_message</code> function.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/74LmIJj.png" alt="74LmIJj" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Caller of <code>print_error_message</code> provides its <code>arg2</code> as the third argument.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/Ur1iVN9.png" alt="Ur1iVN9" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>The caller function has 5 references to it.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/UaaSNCy.png" alt="UaaSNCy" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I checked all of them and none made any sense to me, so I gave up with not using a debugger.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/8jsr7mN.png" alt="8jsr7mN" width="100%"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/9pR7DVk.png" alt="9pR7DVk" width="100%"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/9pR7DVk.png" alt="9pR7DVk" width="100%"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/BtL2rKN.png" alt="BtL2rKN" width="100%"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/vphgD7u.png" alt="vphgD7u" width="100%"/>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_debugging_strategy">Debugging strategy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For debugging I used <code>x64dbg</code> on Windows 10.</p>
+</div>
+<div class="paragraph">
+<p>I searched for the same string from the error message.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/IaQDs1f.png" alt="IaQDs1f" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I set a breakpoint at this address and hit it after opening the second client.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/kQpQCLY.png" alt="kQpQCLY" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Having Instruction Pointer set on <code>00302E41</code> address I set breakpoints on each address of the call stack.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/JcSjLFG.png" alt="JcSjLFG" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I restarted the client and started looking through the code at each breakpoint.
+It took a couple of minutes when I came across a call to <code>CreateMutexA</code> function.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/nd5rmyE.png" alt="nd5rmyE" width="100%"/>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mutex_explanation">Mutex explanation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>I studied <code>WinAPI</code> documentation
+<a href="https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createmutexa">page</a>
+to get more information about this function.</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Creates or opens a named or unnamed mutex object.</p>
+</div>
+</blockquote>
+<div class="attribution">
+— Description
+</div>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>If the function succeeds, the return value is a handle to the newly created mutex object.</p>
+</div>
+<div class="paragraph">
+<p>If the function fails, the return value is NULL. To get extended error information, call GetLastError.</p>
+</div>
+<div class="paragraph">
+<p>If the mutex is a named mutex and the object existed before this function call, the return value is a handle to the existing object, and the GetLastError function returns ERROR_ALREADY_EXISTS.</p>
+</div>
+</blockquote>
+<div class="attribution">
+— Return value
+</div>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>If you are using a named mutex to limit your application to a single instance, a malicious user can create this mutex before you do and prevent your application from starting. To prevent this situation, create a randomly named mutex and store the name so that it can only be obtained by an authorized user. Alternatively, you can use a file for this purpose. To limit your application to one instance per user, create a locked file in the user’s profile directory.</p>
+</div>
+</blockquote>
+<div class="attribution">
+— Remarks
+</div>
+</div>
+<div class="paragraph">
+<p>Aha!
+So the application uses this <code>WinAPI</code> function to limit execution to a single instance.</p>
+</div>
+<div class="paragraph">
+<p>If a second instance tries to create a second mutex <code>GetLastError</code> will return some error.</p>
+</div>
+<div class="paragraph">
+<p>Now I only need to patch the application so that it does not call <code>GetLastError</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_patching">Patching</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>I assume this <code>B7</code> value means <code>ERROR_ALREADY_EXISTS</code> so I’d rather not execute the jump from line below the comparison.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/DptkRUs.png" alt="DptkRUs" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>To remove this jump I right clicked on this line and chose <code>Assemble</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/dtjkoK2.png" alt="dtjkoK2" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I replaced this <code>je</code> instruction with <code>nop</code> instruction, which does nothing.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/PcqUTbJ.png" alt="PcqUTbJ" width="100%"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/90bByA3.png" alt="90bByA3" width="100%"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/2PvnAYw.png" alt="2PvnAYw" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Unfortunately when I tried to use patching functionality of <code>x64dbg</code> it crashed every time.
+I had to patch in kind of manual way, using some hex editor.</p>
+</div>
+<div class="paragraph">
+<p>Firstly I remembered a fragment of the hex dump, which I needed to patch.
+I highlighted the two bytes, which <code>x64dbg</code> changed to <code>90</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/UCF8PoT.png" alt="UCF8PoT" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Having in mind the previous values, let’s find them in the hex editor.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/QQPdvyg.png" alt="QQPdvyg" width="100%"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I used <code>HxD</code> to find and replace those two bytes.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/WfMq2OX.png" alt="WfMq2OX" width="100%"/>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_result">Result</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>I saved the patched <code>.exe</code> file and tried running more than one client with great success.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/y5NsUUq.png" alt="y5NsUUq" width="100%"/>
+</div>
+</div>
+</div>
+</div>
+]]></content></item><item><title>First 3D Printout</title><link>/posts/first-3d-printout/</link><pubDate>Sat, 10 Oct 2020 00:00:00 +0000</pubDate><guid>/posts/first-3d-printout/</guid><description>Dishwasher 101 Your browser does not support the video tag. You know this meme, right? Something similar happened to me once when I unloaded the dishwasher. With the dishwasher’s door opened I also opened a cupboard next to it. I guess nobody has tested to open both things at the same time before.
+Everything broke. The mechanism fell into pieces and scattered across the whole kitchen. The door fell on the floor, and some plastic parts broke off.</description><content type="html"><![CDATA[<div class="sect1">
+<h2 id="_dishwasher_101">Dishwasher 101</h2>
+<div class="sectionbody">
+<div class="videoblock text-right">
+<div class="content">
+<video src="https://i.imgur.com/W9Jp1OG.mp4" autoplay="" loop="">
+Your browser does not support the video tag.
+</video>
+</div>
+</div>
+<div class="paragraph">
+<p>You know this meme, right?
+Something similar happened to me once when I unloaded the dishwasher.
+With the dishwasher’s door opened I also opened a cupboard next to it.
+I guess nobody has tested to open both things at the same time before.</p>
+</div>
+<div class="paragraph">
+<p>Everything broke.
+The mechanism fell into pieces and scattered across the whole kitchen.
+The door fell on the floor, and some plastic parts broke off.</p>
+</div>
+<div class="paragraph">
+<p>In spite of appearances after I assessed the damage it turned out that
+most of the parts just popped out of their mounting.
+Some of them I easily repaired with some glue.</p>
+</div>
+<div class="paragraph">
+<p>Unfortunately one part broke too badly and despite many attempts I did not manage to salvage it.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/FMFU1HL.jpg" alt="FMFU1HL"/>
+</div>
+</div>
+<div class="paragraph">
+<p>It didn’t break in a clean way, a lot of small debris broke off between the two broken elements.
+Contact surface between these elements seemed too small, but I still tried my luck with glue.
+The glue held only for a couple of days possibly due to high temperature conditions.</p>
+</div>
+<div class="paragraph">
+<p>I gave up and decided that I need a brand-new part as a replacement.
+My beloved searched the IKEA website for this part but IKEA demanded way too much money for it.
+I then thought about 3D printing.
+I had no idea how much it could cost but even if it costed as much as in IKEA, I would at least learn something
+(and possibly have fun doing it).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_designing">Designing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>My hunt for the easiest 3D modeling software led me to <code>TINKERCAD</code> by <code>AUTODESK</code>.
+It has very simple but also limited functionality, so I had to strain my brain to draw these curves
+with basic shapes likes <code>Box</code> or <code>Sphere</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/f2c5RWc.jpg" alt="f2c5RWc"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Instead of drawing the curves right away I had to draw some kind of tubes (yellow thing in the screenshot)
+and then cut them using a lot of boxes.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/FLD4Gff.jpg" alt="FLD4Gff"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I’ve chosen <code>.STL</code> <sup class="footnote" id="_footnote_stl">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup>
+as an export format.
+I honestly have no idea how these formats differ but <em>Tinkercad</em> suggested using this format for 3D printing.
+Plus, downloading in <code>.OBJ</code> format results in getting a zip package so managing one <code>.STL</code> file seems easier.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/nymcxYc.jpg" alt="nymcxYc" width="100%"/>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_package">Package</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>I do not have a 3D printer myself, and I do not plan to, so I had to find some other option.</p>
+</div>
+<div class="paragraph">
+<p>I searched for a 3D printing service and found <a href="https://www.3dream.pl/">3Dream</a>.
+They have incredibly beautiful online estimation tool.
+The tool shows the price instantly and helps with a choice of printing material.
+Unfortunately they have a minimal price.
+I’d have to ask for at least 12 units of my part to place an order.</p>
+</div>
+<div class="paragraph">
+<p>Then I found <a href="http://ajmaker.pl/">AJmaker</a>.
+They demanded twice as much money for the printout and twice as much for the delivery.
+Considering it, I’d still pay one third of <a href="https://www.3dream.pl/">3Dream</a>&#39;s minimal price.</p>
+</div>
+<div class="paragraph">
+<p>I placed the order there, and a couple of days later I’ve got the package.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/Av1TU3Y.jpg" alt="Av1TU3Y"/>
+</div>
+</div>
+<div class="paragraph">
+<p>The package contained this one small piece.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/Xci8uEg.jpg" alt="Xci8uEg"/>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_assembling">Assembling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The part feels a bit too loose, but it seems it’ll hold.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/42659lR.jpg" alt="42659lR"/>
+</div>
+</div>
+<div class="paragraph">
+<p>I’ve mounted it to the dishwasher and hoped it’ll hold the dishwasher door in place.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/vjJ8nDz.jpg" alt="vjJ8nDz"/>
+</div>
+</div>
+<div class="paragraph">
+<p>The door doesn’t run perfectly, but it still works mobs better than without it.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/WeY84yV.jpg" alt="WeY84yV"/>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_lessons">Lessons?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Do not fear playing with 3D printing even if you have no experience.
+You’ll find it not only enjoyable but also pretty useful when it comes to small repairs!</p>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr/>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. (an abbreviation of &#34;stereolithography&#34;) The universal format for 3D Printing. Choose the STL format if you are exporting for 3D printing. STL format format is supported by many other software packages; it is widely used for rapid prototyping, 3D printing and computer-aided manufacturing. Source: <a href="https://tinkercad.zendesk.com/hc/en-us/articles/360034615794">Tinkercad Export Filetypes Explained</a>
+</div>
+</div>
+]]></content></item><item><title>Magic box</title><link>/posts/magic-box/</link><pubDate>Thu, 06 Aug 2020 00:00:00 +0000</pubDate><guid>/posts/magic-box/</guid><description>Make gifts for people Don’t make stuff because you want to make money — it will never make you enough money. And don’t make stuff because you want to get famous — because you will never feel famous enough. Make gifts for people — and work hard on making those gifts in the hope that those people will notice and like the gifts.
+Maybe they will notice how hard you worked, and maybe they won’t — and if they don’t notice, I know it’s frustrating.</description><content type="html"><![CDATA[<div class="sect1">
+<h2 id="_make_gifts_for_people">Make gifts for people</h2>
+<div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Don’t make stuff because you want to make money — it will never make you enough money.
+And don’t make stuff because you want to get famous — because you will never feel famous enough.
+Make gifts for people — and work hard on making those gifts in the hope that those people will notice
+and like the gifts.</p>
+</div>
+<div class="paragraph">
+<p>Maybe they will notice how hard you worked, and maybe they won’t — and if they don’t notice,
+I know it’s frustrating.
+But, ultimately, that doesn’t change anything —
+because your responsibility is not to the people you’re making the gift for, but to the gift itself.
+<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup></p>
+</div>
+</blockquote>
+<div class="attribution">
+— John Green
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_inspiration">Inspiration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://store.arduino.cc/genuino-starter-kit">ARDUINO STARTER KIT</a> inspired me once more.
+In <a href="https://matishadow-blog.gear.host/posts/hacking-buttons">Hacking buttons</a> blog post
+I described how I followed the last project from the kit.
+This time I’ve made my own twist on an original project and made a gift out of it.</p>
+</div>
+<div class="paragraph">
+<p>I used <code>Knock Lock</code> project to base mine upon.
+It consisted of two components: a <code>piezo</code>
+<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup>
+and a <code>servo motor</code>
+<sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnotedef_3" title="View footnote.">3</a>]</sup>.
+The project used the servo to open and close a box as shown below.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/ekrIGpd.png" alt="ekrIGpd"/>
+</div>
+</div>
+<div class="paragraph">
+<p>To decide whether to lock or unlock the box Arduino used the piezo.
+Arduino could <em>hear</em> and count down knocks.
+If the number of knocks equaled to specific number Arduino opened the box.
+Since knocking seems fun but not secure I decided to create a more interesting solution.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_making_the_gift">Making the gift</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let’s make the gift, shall we?
+As it goes with all a bit complicated project I needed to split the project into parts.</p>
+</div>
+<div class="sect2">
+<h3 id="_testing_the_servo">Testing the servo</h3>
+<div class="paragraph">
+<p>Firstly I researched how to use the servo.
+I quickly assembled a project, which involved it to recall how to use it.
+Later I removed all the unnecessary parts including capacitors, who needs a smooth motion right?</p>
+</div>
+<div class="paragraph">
+<p>Unfortunately when trying to glue the yellow part to the actual servo mechanism I destroyed it.
+Some of the glue must have gotten in the mechanism.
+Lesson learnt to use a screw next time!</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/EDkNs7r.jpg" alt="EDkNs7r"/>
+</div>
+<div class="title">Figure 1. Servo, which got destroyed.</div>
+</div>
+<div class="paragraph">
+<p>In perpendicular position the servo would close the box while in parallel the box could open.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/XahOfra.jpg" alt="XahOfra"/>
+</div>
+<div class="title">Figure 2. Testing new servo, closed</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/Rl3XnHZ.jpg" alt="Rl3XnHZ"/>
+</div>
+<div class="title">Figure 3. Testing new servo, open</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_connecting_raspberry_and_arduino">Connecting Raspberry and Arduino</h3>
+<div class="paragraph">
+<p>Now let’s switch to the harder part of the project.</p>
+</div>
+<div class="paragraph">
+<p>I used 4 GPIO pins of the Raspberry to send 4 bits of a digit.</p>
+</div>
+<div class="ulist">
+<div class="title">To for example send</div>
+<ul>
+<li>
+<p><code>4</code> I needed to set the following cables to these voltage levels:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>yellow → <code>LOW</code></p>
+</li>
+<li>
+<p>purple → <code>LOW</code></p>
+</li>
+<li>
+<p>orange → <code>HIGH</code></p>
+</li>
+<li>
+<p>brown → <code>LOW</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>9</code> I needed to set the following cables to these voltage levels:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>yellow → <code>HIGH</code></p>
+</li>
+<li>
+<p>purple → <code>LOW</code></p>
+</li>
+<li>
+<p>orange → <code>LOW</code></p>
+</li>
+<li>
+<p>brown → <code>HIGH</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The fifth green cable acted as a clock to notify the Arduino when to read the voltages.</p>
+</div>
+<div class="paragraph">
+<p>Arduino waited for 4 digits: <code>2</code>, <code>9</code>, <code>0</code> and <code>7</code> before opening.</p>
+</div>
+<div class="paragraph">
+<p>Each green LED indicated a correctly sent digit, yellow LED whether the Arduino listens for input or not.</p>
+</div>
+<div class="paragraph">
+<p>To open the box automatically I created the following python script:</p>
+</div>
+<div class="listingblock">
+<div class="title">open-box.py</div>
+<div class="content">
+<pre class="highlight"><code class="language-python" data-lang="python">import os
+import time
+
+os.system(&#34;gpio -1 mode 29 OUT &amp;&amp; gpio -1 mode 31 OUT &amp;&amp; gpio -1 mode 33 OUT &amp;&amp; gpio -1 mode 35 OUT &amp;&amp; gpio -1 mode 37 OUT&#34;)
+os.system(&#34;gpio -1 write 37 0&#34;)
+
+os.system(&#34;gpio -1 write 35 0 &amp;&amp; gpio -1 write 33 0 &amp;&amp; gpio -1 write 31 1 &amp;&amp; gpio -1 write 29 0&#34;)
+os.system(&#34;gpio -1 write 37 1&#34;)
+os.system(&#34;gpio -1 write 37 0&#34;)
+time.sleep(3);
+
+os.system(&#34;gpio -1 write 35 1 &amp;&amp; gpio -1 write 33 0 &amp;&amp; gpio -1 write 31 0 &amp;&amp; gpio -1 write 29 1&#34;)
+os.system(&#34;gpio -1 write 37 1&#34;)
+os.system(&#34;gpio -1 write 37 0&#34;)
+time.sleep(3);
+
+
+os.system(&#34;gpio -1 write 35 0 &amp;&amp; gpio -1 write 33 0 &amp;&amp; gpio -1 write 31 0 &amp;&amp; gpio -1 write 29 0&#34;)
+os.system(&#34;gpio -1 write 37 1&#34;)
+os.system(&#34;gpio -1 write 37 0&#34;)
+time.sleep(3);
+
+
+os.system(&#34;gpio -1 write 35 0 &amp;&amp; gpio -1 write 33 1 &amp;&amp; gpio -1 write 31 1 &amp;&amp; gpio -1 write 29 1&#34;)
+os.system(&#34;gpio -1 write 37 1&#34;)
+os.system(&#34;gpio -1 write 37 0&#34;)
+time.sleep(3);</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/1DO5x13.jpg" alt="1DO5x13"/>
+</div>
+<div class="title">Figure 4. Raspberry GPIO pins</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/tiTr53o.jpg" alt="tiTr53o"/>
+</div>
+<div class="title">Figure 5. Arduino connected to Raspberry, leds off</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/dz3VcFw.jpg" alt="dz3VcFw"/>
+</div>
+<div class="title">Figure 6. Arduino connected to Raspberry, leds on</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/4w8GaNe.jpg" alt="4w8GaNe"/>
+</div>
+<div class="title">Figure 7. Arduino connected to both Raspberry and servo</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_battery">Battery?</h3>
+<div class="paragraph">
+<p>Observant reader might spot disappearance of the battery in the last photo.
+Well, the initial plan involved powering the arduino using a 9V battery, but it failed.</p>
+</div>
+<div class="paragraph">
+<p>Arduino booted correctly, and it ran the code just fine, however readings from <code>analogRead</code> looked totally off.
+I searched the Internet for similar problems and found something called <em>common ground issue</em>.
+Basically to read voltages from Raspberry correctly, I needed to connect both devices to the same ground.
+Luckily I managed to use 5V pin from Raspberry to power the Arduino.</p>
+</div>
+<div class="paragraph">
+<p>Powering the Arduino from Raspberry made both of the devices use the same ground, so I could read the voltages correctly.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://electronics.stackexchange.com/questions/53925/common-ground-and-voltages">Explanation of the issue here.</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_soldering">Soldering</h3>
+<div class="paragraph">
+<p>I used the good old soldering iron to make necessary holes in the box.</p>
+</div>
+<div class="paragraph">
+<p>I needed the first hole, so the servo could prevent the box from opening.
+The hole’s breadth roughly equals to the servo’s width.
+Such measurement enables the servo to freely turn 360 degrees.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/fg5aeS9.jpg" alt="fg5aeS9"/>
+</div>
+<div class="title">Figure 8. Hole for servo</div>
+</div>
+<div class="paragraph">
+<p>To weave cables through the box I made small holes for each of them.
+It turned out totally unaligned but melting plastic stands far from easy.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/MgwWMQI.jpg" alt="MgwWMQI"/>
+</div>
+<div class="title">Figure 9. Holes for cables</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_decorating">Decorating</h3>
+<div class="paragraph">
+<p>For the final touch I used some glitter tape to decorate the whole box.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/cUBdtgC.jpg" alt="cUBdtgC"/>
+</div>
+<div class="title">Figure 10. Decorated and open</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/Jz4HUlS.jpg" alt="Jz4HUlS"/>
+</div>
+<div class="title">Figure 11. Decorated and closed</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://i.imgur.com/WjQ3D4B.jpg" alt="WjQ3D4B"/>
+</div>
+<div class="title">Figure 12. Servo through hole</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_magic_box_in_action">Magic box in action</h3>
+<div class="paragraph">
+<p>First video presents how the project works without any changes to the box.</p>
+</div>
+<div class="videoblock">
+<div class="title">Project with servo not glued</div>
+<div class="content">
+<video src="https://i.imgur.com/XFqvpu2.mp4" controls="">
+Your browser does not support the video tag.
+</video>
+</div>
+</div>
+<div class="paragraph">
+<p>Video belows shows the project in its final form.</p>
+</div>
+<div class="videoblock">
+<div class="title">Final version of the project</div>
+<div class="content">
+<video src="https://i.imgur.com/v8oKa5Z.mp4" controls="">
+Your browser does not support the video tag.
+</video>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_link_to_the_repository">Link to the repository</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://github.com/matishadow/magic-box" class="bare">https://github.com/matishadow/magic-box</a></p>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr/>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. Would you like to see a comic depicting this quote? Visit <a href="https://www.zenpencils.com/comic/119-john-green-make-gifts-for-people/">ZEN PENCILS</a> to see it!
+</div>
+<div class="footnote" id="_footnotedef_2">
+<a href="#_footnoteref_2">2</a>. A piezo is an electronic device that generates a voltage when it’s physically deformed by a vibration, sound wave, or mechanicalstrain. Similarly, when you put a voltage across a piezo, it vibrates and creates a tone. Piezos can be used both to play tones and to detect tones.
+</div>
+<div class="footnote" id="_footnotedef_3">
+<a href="#_footnoteref_3">3</a>. Device that can turn to a specified position. Usually, they have a servo arm that can turn 180 degrees.
+</div>
+</div>
+]]></content></item><item><title>Hacking buttons</title><link>/posts/hacking-buttons/</link><pubDate>Thu, 19 Mar 2020 00:00:00 +0000</pubDate><guid>/posts/hacking-buttons/</guid><description>Idea You’d think when living far from the city centre and near the underground station, there’s plenty of parking space? Nothing could be further from the truth.
+However, something is even more baffling. Most of the street at which I live is closed by a road barrier which could be opened using a remote control. There’s no point in using it though because past the barrier there’re even fewer free parking spaces.</description><content type="html"><![CDATA[<div class="sect1">
+<h2 id="_idea">Idea</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You’d think when living far from the city centre and near the underground station,
+there’s plenty of parking space?
+<em>Nothing</em> could be further from the truth.</p>
+</div>
+<div class="paragraph">
+<p>However, something is even more baffling.
+Most of the street at which I live is closed by a road barrier
+which could be opened using a remote control.
+There’s no point in using it though because past the barrier there’re even fewer free parking spaces.</p>
+</div>
+<div class="paragraph">
+<p>Since I do not care about it working, let’s play with it using <em>Arduino</em>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_progress">Progress</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The project is based on a project from <a href="https://store.arduino.cc/genuino-starter-kit">this kit</a>
+- “15 HACKING BUTTONS create a master control for all your devices!”.</p>
+</div>
+<div class="sect2">
+<h3 id="_remote_control_investigation">Remote control investigation</h3>
+<div class="paragraph">
+<p>This is how the back of the opened remote control looks like.
+As you can see, there are no buttons here.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/buttons-side-2.jpg" alt="buttons side 2"/>
+</div>
+</div>
+<div class="paragraph">
+<p>On the other side we can see the four buttons covered with some metal caps.
+In order to connect Arduino to each button we need to remove these.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/buttons-side-1-covered.jpg" alt="buttons side 1 covered"/>
+</div>
+</div>
+<div class="paragraph">
+<p>After removing the caps this is how the PCB<sup class="footnote" id="_footnote_pcb">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> looks like.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/buttons-side-1-uncovered.jpg" alt="buttons side 1 uncovered"/>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_soldering">Soldering</h3>
+<div class="paragraph">
+<p>First step is to mount the remote control PCB<sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> into the soldering arms.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/buttons-in-stand.jpg" alt="buttons in stand"/>
+</div>
+</div>
+<div class="paragraph">
+<p>Two wires are soldered to the first button.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/buttons-soldered-1.jpg" alt="buttons soldered 1"/>
+</div>
+</div>
+<div class="paragraph">
+<p>And the other two to the second button of the remote control.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/buttons-soldered-2.jpg" alt="buttons soldered 2"/>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_assembling_circuit">Assembling circuit</h3>
+<div class="paragraph">
+<p>In order to control the remote control using Arduino I used something called an <em>optocoupler</em>.</p>
+</div>
+<div class="sect3">
+<h4 id="_schematic_of_an_optocoupler">Schematic of an optocoupler</h4>
+<div class="paragraph">
+<p><span class="image"><img src="/hacking-buttons/optocoupler.png" alt="optocoupler"/></span></p>
+</div>
+<div class="paragraph">
+<p>It is an IC<sup class="footnote" id="_footnote_ic">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup>
+which allows controlling one circuit from a different one without any electrical connection between them.
+It consists of an LED<sup class="footnote" id="_footnote_led">[<a id="_footnoteref_3" class="footnote" href="#_footnotedef_3" title="View footnote.">3</a>]</sup>
+and a phototransistor<sup class="footnote">[<a id="_footnoteref_4" class="footnote" href="#_footnotedef_4" title="View footnote.">4</a>]</sup>.
+When the LED<sup class="footnoteref">[<a class="footnote" href="#_footnotedef_3" title="View footnote.">3</a>]</sup> is powered by Arduino, the light detector closes the internal switch.
+The switch is connected to 4 and 5 pin (<a href="https://www.arduino.cc/documents/datasheets/Optocouplers.pdf">datasheet link</a>).
+When the switch is closed, the two pins are connected.
+The two pins being connected is equivalent to the button being pressed in our case.</p>
+</div>
+<div class="paragraph">
+<p>I also needed a 220 Ω resistor to not destroy the LED<sup class="footnoteref">[<a class="footnote" href="#_footnotedef_3" title="View footnote.">3</a>]</sup> inside the optocoupler.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_arduino_connected_to_the_circuit">Arduino connected to the circuit</h4>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/opto-1.jpg" alt="opto 1"/>
+</div>
+</div>
+<div class="paragraph">
+<p>There are two buttons to control (two arms of the road barrier) so I duplicated what I already had.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/opto-2.jpg" alt="opto 2"/>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_arduino_and_the_remote_control_connected">Arduino and the remote control connected.</h4>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/finished.jpg" alt="finished"/>
+</div>
+</div>
+<div class="paragraph">
+<p><em>9V battery</em> is used to power the Arduino so it can be disconnected from the USB port.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/finished-with-battery.jpg" alt="finished with battery"/>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_schematic_of_the_circuit">Schematic of the circuit</h4>
+<div class="imageblock">
+<div class="content">
+<img src="/hacking-buttons/hacking-buttons-schematic.png" alt="hacking buttons schematic"/>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_arduino_source_code">Arduino source code</h3>
+<div class="paragraph">
+<p>Code behind it is pretty straightforward.</p>
+</div>
+<div class="paragraph">
+<p>In <code>setup</code> I set both of the pins connected to optocouplers to <code>OUTPUT</code> mode.
+This mode allows the pins to provide current to the optocouplers.</p>
+</div>
+<div class="paragraph">
+<p>In <code>loop</code> a random number is being chosen.
+Depending on the parity, first or the second button is being pressed.</p>
+</div>
+<div class="paragraph">
+<p>The <code>pressButton</code> function simulates pressing the button on the remote control.
+Arduino sets pin voltage to <em>5V</em> for 1000 ms (using <code>delay</code> function).
+Then pin voltage is being set to <em>0V</em> for a random duration (10 to 60 seconds).</p>
+</div>
+<div class="paragraph">
+<p>There is source code below which is also available on <a href="https://github.com/matishadow/arduino-starting-kit/blob/master/project-15-hacking-buttons/project-15-hacking-buttons.ino">my github here</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-arduino" data-lang="arduino">const int optoPin1 = 2;
+const int optoPin2 = 12;
+
+unsigned long seconds = 1000L;
+unsigned long minutes = seconds * 60;
+unsigned long hours = minutes * 60;
+
+const int pressTime = 1000;
+
+void setup(){
+  pinMode(optoPin1, OUTPUT);
+  pinMode(optoPin2, OUTPUT);
+}
+
+void loop(){
+  int randomNumber = random(10, 60);
+
+  if (randomNumber % 2 == 0)
+    pressButton(optoPin1, randomNumber);
+  else
+    pressButton(optoPin2, randomNumber);
+}
+
+void pressButton(int pinNumber, int randomNumber){
+  digitalWrite(pinNumber, HIGH);
+  delay(pressTime);
+  digitalWrite(pinNumber, LOW);
+
+  delay(randomNumber * seconds);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_project_in_action">Project in action</h2>
+<div class="sectionbody">
+<div class="videoblock">
+<div class="content">
+<video src="/hacking-buttons/finished.mp4" controls="">
+Your browser does not support the video tag.
+</video>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr/>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. A printed circuit board (PCB) is a board made for connecting electronic components together.
+</div>
+<div class="footnote" id="_footnotedef_2">
+<a href="#_footnoteref_2">2</a>. Integrated circuit. It is a component that holds large circuit in a tiny package.
+</div>
+<div class="footnote" id="_footnotedef_3">
+<a href="#_footnoteref_3">3</a>. Light-Emitting Diode is a semiconductor device that produces light from electricity.
+</div>
+<div class="footnote" id="_footnotedef_4">
+<a href="#_footnoteref_4">4</a>. It is a type of photodetector capable of changing (or converting) light into either current or voltage.
+</div>
+</div>
+]]></content></item><item><title>RE for Beginners Julia - write-up</title><link>/posts/julia-write-up/</link><pubDate>Sun, 27 Jan 2019 18:41:58 +0100</pubDate><guid>/posts/julia-write-up/</guid><description>Write-up intro Let&amp;rsquo;s make a write-up of the easiest of the easiest reverse engineering challenges (not even entry CTF level).
+I will show you how I, as a total beginner, approached it and how I made it through.
+For the reversing tool I will be using Binary Ninja ($149) since it&amp;rsquo;s much more affordable than IDA Pro ($589).
+Goal The goal as with many other crackme challenges is to find the correct password.</description><content type="html"><![CDATA[<h2 id="write-up-intro">Write-up intro</h2>
+<p>Let&rsquo;s make a write-up of the easiest of the easiest reverse engineering challenges (not even entry <a href="https://ctftime.org/ctf-wtf/">CTF</a> level).</p>
+<p>I will show you how I, as a total beginner, approached it and how I made it through.</p>
+<p>For the reversing tool I will be using <a href="https://binary.ninja/">Binary Ninja</a> ($149) since it&rsquo;s much more affordable than <a href="https://www.hex-rays.com/products/ida/">IDA Pro</a> ($589).</p>
+<h2 id="goal">Goal</h2>
+<p>The goal as with many other crackme challenges is to find the correct password.</p>
+<p><a href="https://www.begin.re/julia">Link to the exercise</a></p>
+<h2 id="reversing">Reversing</h2>
+<p>First I checked the downloaded executable.</p>
+<blockquote>
+<p>E:\tmp\re\julia&gt;ls
+Exer2_Juila.exe</p>
+</blockquote>
+<blockquote>
+<p>E:\tmp\re\julia&gt;file Exer2_Juila.exe
+Exer2_Juila.exe; PE32 executable for MS Windows (console) Intel 80386 32-bit</p>
+</blockquote>
+<p>As expected it is a standard 32-bit Windows executable.</p>
+<p>Let&rsquo;s run it then.</p>
+<blockquote>
+<p>E:\tmp\re\julia&gt;Exer2_Juila.exe
+Please provide the password.</p>
+</blockquote>
+<blockquote>
+<p>E:\tmp\re\julia&gt;Exer2_Juila.exe AAAAA
+Incorrect Password.</p>
+</blockquote>
+<p>Now open it in Binary Ninja and look for the two strings which we&rsquo;ve seen.</p>
+<p><img src="https://matishadow.files.wordpress.com/2019/01/strings.png" alt=""></p>
+<p>After executing the <em>Linear Sweep</em> we get lots of functions, and we need to get to know which could be the main() function.</p>
+<p><img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_14-27-27.png" alt=""></p>
+<p>To do so we search for the reference of one of the previously found strings.</p>
+<p><img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_14-32-18.png" alt=""></p>
+<p>It has been found in <em>sub_401040</em> function, so I&rsquo;ll rename it to main().</p>
+<p>The first check is being made against <em>arg1</em> and in case of it not being equal to 2 we branch to code responsible for printing <em>Please provide the password.</em> string.</p>
+<p><img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_14-44-06.png" alt=""></p>
+<p>Now we&rsquo;re pretty sure it in fact is the main function and therefore we can rename <em>arg1</em> to <em>argc</em> and <em>arg2</em> to <em>argv</em>.</p>
+<p>This is how the other branch looks like.
+<img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_14-51-38.png" alt=""></p>
+<p>The first block of code calculates length of the password provided as an argument.
+Then it allocates a buffer of the same length (including null byte) as the provided password.
+<img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_15-35-34.png" alt=""></p>
+<p>In case of malloc returning a null pointer (failed at allocating the bytes) the program exists.
+We do now care about this part.</p>
+<p>The next block copies the provided password to the allocated buffer.
+<img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_15-43-54.png" alt=""></p>
+<p>Here we come to the interesting part of the function.
+<img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_15-46-35.png" alt=""></p>
+<p>We can clearly see a loop there. The loop iterates over the allocated buffer until it reaches a null byte.
+During each pass it calls <em>sub_401160</em> function with one byte of data.
+Now let&rsquo;s look what&rsquo;s inside of this function.</p>
+<p><img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_16-31-33.png" alt=""></p>
+<p>Function presented above checks if the provided byte is a lower-case or an upper-case letter.
+If it is then data located at <em>data_403008</em> is added to the byte.
+At this address there is a constant which is equal to 4.</p>
+<p>Coming back to our main function.
+<img src="https://matishadow.files.wordpress.com/2019/01/binaryninja_2019-01-27_16-36-24.png" alt=""></p>
+<p>After the loop is finished the first 11 characters of the modified buffer are compared against &ldquo;VIMwXliFiwx&rdquo; sting.
+That means that to decode it we need to subtract 4 from each of these characters.</p>
+<p>Let&rsquo;s write one line of Python (3) to decode it.</p>
+<blockquote>
+<p>C:\Users\matishadow&gt;ipython -c &quot; for char in &lsquo;VIMwXliFiwx&rsquo;: print(chr(ord(char) - 4), end = &lsquo;')
+REIsTheBest</p>
+</blockquote>
+<p>The password looks pretty legit but we can check it on the <a href="https://www.begin.re/julia">website</a>.
+<img src="https://matishadow.files.wordpress.com/2019/01/chrome_2019-01-27_16-45-29.png" alt=""></p>
+<p>This is indeed correct!</p>
+<h2 id="summary">Summary</h2>
+<p>Even though the encoding of the password was close to none the whole process showed how to quickly get to the interesting part of the binary.</p>
+]]></content></item></channel></rss>
