@@ -1,0 +1,120 @@
+---
+title: "Hello W̶o̶r̶l̶d̶ Rust"
+date: 2021-05-24
+draft: false
+tags: ["programming", "rust", "bitmap", "file-formats", "bmp"]
+:toc:
+comments: true
+---
+
+= Hello W̶o̶r̶l̶d̶ Rust
+
+== Let's learn Rust, shall we?
+Having worked in one Swedish company for almost 3 years I wrote a lot of C code.
+I somewhat enjoyed it because the project codebase contained several amenities.
+It contained functions for 'strings' manipulation,
+functions for database manipulations, and some memory checks.
+I rarely needed to use `malloc`, and I've only seen a `segmentations fault` maybe a couple of times.
+
+I knew I could have worst, but I still searched for some alternatives.
+Along `GO` footnote:[Go is a statically typed, compiled programming language designed at Google by Robert Griesemer, Rob Pike, and Ken Thompson. Go is syntactically similar to C, but with memory safety, garbage collection, structural typing, and CSP-style concurrency.],
+I also found `Rust`.
+
+[quote, Description from Wikipedia]
+____
+Rust is a multi-paradigm programming language designed for performance and safety, especially safe concurrency. Rust is syntactically similar to C++, but can guarantee memory safety by using a borrow checker to validate references.
+____
+
+Sounds good to me.
+`Mozilla Research` developed it about 10 years ago, and
+many big products like `Firefox`, `Dropbox`, and `Cloudflare` use it today.
+
+I feel convinced, so let's learn it and by learning it I don't mean starting with a tutorial.
+By learning I mean creating a small project.
+I enjoy playing with file formats so why not write a `BMP` decoder in Rust?
+
+== First steps
+
+I installed Rust compiler on my Ubuntu with `sudo apt install rustc`.
+
+image::https://i.imgur.com/g70KZN6.png[]
+
+To create a new project I used `cargo` command `cargo new bmp-rust`.
+
+.This command created a new source file `src/main.rs` with 'Hello World' in it:
+[source,rust]
+----
+fn main() {
+    println!("Hello, world!");
+}
+----
+
+=== Showing an image using a standard library
+Before I jump into the decoding part I want to learn how to display an image without my decoder.
+
+I googled `rust show image` to get some example code.
+In Rust documentation footnote:[https://docs.rs/show-image/0.8.4/show_image/]
+I found this example:
+[source,rust]
+----
+use show_image::{ImageView, ImageInfo, create_window};
+
+#[show_image::main]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+  let image = ImageView::new(ImageInfo::rgb8(1920, 1080), pixel_data);
+
+  // Create a window with default options and display the image.
+  let window = create_window("image", Default::default())?;
+  window.set_image("image-001", image)?;
+
+  Ok(())
+}
+----
+
+I ran it and it did not work.
+I got the following error.
+
+image::https://i.imgur.com/APYZqVf.png[]
+
+I've tried using `cargo` to search for this dependency and then install it.
+
+image::https://i.imgur.com/3XMXq83.png[]
+
+I cannot install it that way, but I must add it to project dependencies, good hint!
+
+I edited my `Cargo.toml` file and I've tried again.
+
+image::https://i.imgur.com/zLC1AQi.png[]
+
+This time I got an error about `pixel_data` variable
+(getting a different error always feels heartwarming).
+
+image::https://i.imgur.com/Wwz8EPy.png[]
+
+I guess the example from the documentation missed this variable, bummer.
+
+After more googling how to get the pixel data from a bmp file I found a solution.
+
+[source,rust]
+----
+let path = "/home/matishadow/.config/JetBrains/Rider2020.3/scratches/bmp-rust/imgs/test-image.bmp";
+
+let data = fs::read(path).unwrap();
+let dynamic_image = ImageReader::open(path)?.decode()?;
+
+let rgb_image = dynamic_image.to_rgb8();
+----
+
+As a test image I've used a standard portrait of Lena.
+image:https://i.imgur.com/4z1ylwJ.png[]
+
+I run the solution and a window with black screen greeted me.
+Console reported a strange error `INTEL-MESA: warning: Haswell Vulkan support is incomplete`.
+I dug deep into Google and I couldn't find a right solution for it for a long time.
+Finally after an hour of searching I found this comment.
+image:https://i.imgur.com/Af4quym.png[]
+For me `vkcube` ran perfectly but still the image did not show itself.
+Nevertheless I tried to removed this `intel_icd.x86_64.json` file and after that it magically worked.
+
+Great success, now I can see Lena instead of black screen, but will I be able to duplicate this result using my decoder?
