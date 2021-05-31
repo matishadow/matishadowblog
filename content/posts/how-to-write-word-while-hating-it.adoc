@@ -1,0 +1,167 @@
+---
+title: "How To Write Word While Hating It"
+date: 2021-05-31
+draft: false
+tags: ["documentation", "technical-documentation", "word", "markdown", "asciidoc", "asciidoctor"]
+:toc:
+comments: true
+---
+
+= How To Write Word While Hating It
+
+== Why do I hate it?
+Let's explain it using a meme.
+
+image::https://i.imgur.com/E5Dp5XL.jpg[]
+
+Cast the first stone if you haven't experience this situation (well maybe without the sirens).
+This happens when it comes to any WYSIWYG footnote:[WYSIWYG (pronounced /ˈwɪziwɪg/ or /ˈwɪzɪwɪg/), is an acronym for What You See Is What You Get, used in computing to describe a system where things you edit on the on-screen editor appear almost the same to the final output, which might be a printed document, a web page, a PowerPoint presentation or even the lighting for a concert. Web designers often use this word to talk about their work.],
+not only `Microsoft Word` and I hate them all.
+How could you focus on the content you write when you have to think about formatting all the time?
+I know you could setup the formatting beforehand but then you can still break it
+when moving an image by a mm.
+
+Unfortunately life is life and sometimes you have to write something in Word.
+(Thank God I could use LaTeX when writing my thesis!)
+One of such times could occur when you developed a new feature
+and you have to describe it in some technical documentation document.
+It already contains 80 pages of lousy text, and you have to add your pretty paragraph to it.
+What to do then?
+
+== Alternatives
+I won't go too deep into what alternatives do we have.
+In this post I assume you have your favourite tool for writing, maybe LaTeX, maybe Markdown,
+maybe something more exotic.
+
+Whatever you have the general gist is to export it to `HTML` and then import it in Word.
+
+=== Markdown example
+Let's start with something simple.
+Everyone knows Markdown, right? footnote:[If you lived in a cave for the past 10 years then go ahead and learn it now: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet]
+
+I've created a simple Markdown document to test how it looks in Word after importing it.
+
+[source,markdown]
+----
+# H1
+## H2
+### H3
+#### H4
+##### H5
+###### H6
+
+Emphasis, aka italics, with *asterisks* or _underscores_.
+
+Strong emphasis, aka bold, with **asterisks** or __underscores__.
+
+Combined emphasis with **asterisks and _underscores_**.
+
+Strikethrough uses two tildes. ~~Scratch this.~~
+
+1. First ordered list item
+2. Another item
+     * Unordered sub-list.
+1. Actual numbers don't matter, just that it's a number
+     1. Ordered sub-list
+4. And another item.
+
+* Unordered list can use asterisks
+- Or minuses
++ Or pluses
+
+[I'm an inline-style link](https://www.google.com)
+
+[I'm an inline-style link with title](https://www.google.com "Google's Homepage")
+
+Inline-style:
+![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+
+```javascript
+var s = "JavaScript syntax highlighting";
+alert(s);
+```
+
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+----
+
+To convert it to `HTML` you can use whatever tool you have.
+Probably your text editor already has plugins for doing it.
+You can also use `pandoc` for doing it `pandoc markdown-test.md -o markdown-test.html`
+or find some `npm` library for it `npm install markdown-to-html -g; markdown markdown-test.md  > markdown-test.html`.
+
+I present the rendered example below.
+
+image::https://i.imgur.com/HVoGNtj.png[]
+
+I will use an example document, which I found on Google.
+
+image::https://i.imgur.com/mVlw9t5.png[]
+
+To insert your rendered file place your cursor in the place where you want to add your part.
+
+image::https://i.imgur.com/fcxAGF9.png[]
+
+First you go into `Insert` tab.
+
+image::https://i.imgur.com/btTnZXW.png[]
+
+Then click `Object` and `Text from File...` and choose your `HTML` file.
+
+image::https://i.imgur.com/wUpwp6z.png[]
+
+My example looks something like this.
+
+image::https://i.imgur.com/jbX4tiZ.png[]
+image::https://i.imgur.com/f3uatBC.png[]
+
+The result does not look ideal, for example Strikethrough did not work
+but apart from this it looks pretty decent.
+
+=== Asciidoctor
+
+Just for comparison let's do the same with a format more advanced than Markdown.
+
+[source,asciidoc]
+----
+=== H3
+
+* [*] checked
+* [x] also checked
+* [ ] not checked
+* normal list item
+
+[qanda]
+What is the answer?::
+This is the answer.
+
+Have you seen my duck?:: No.
+
+A bold statement!footnote:disclaimer[Opinions are my own.]
+
+[cols="1,1"]
+|===
+|Cell in column 1, row 1
+|Cell in column 2, row 1
+
+|Cell in column 1, row 2
+|Cell in column 2, row 2
+
+|Cell in column 1, row 3
+|Cell in column 2, row 3
+|===
+
+----
+
+Generated `HTML` looks like this.
+
+image::https://i.imgur.com/tIDO1pX.png[]
+
+And after importing it to Word.
+
+image::https://i.imgur.com/9MLENqc.png[]
+
+It also looks pretty decent, even the footnote worked!
