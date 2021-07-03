@@ -1,0 +1,64 @@
+---
+title: "Very Hot Fix 🌶️️"
+date: 2021-07-03
+draft: false
+tags: ["programming", ".NET", "dotnet", "IL", "patching", "decompilation"]
+:toc:
+comments: true
+---
+
+= Very Hot Fix 🌶️
+
+== Emergency call
+Let's imagine yourself sleeping on Saturday night.
+You feel cozy, calm and dreamy in your REM phase.
+Suddenly you hear your phone ringing.
+In the first moment you think it's ringing in your dream, but
+then you wake up and drunkenly look at the phone.
+You register two things in your brain, 2 A.M. and your boss' name as a caller.
+For a split second you question your life choices but for some reason you decide to answer.
+On the other end your boss tells you that the production crushes and begs you to fix it.
+He asserts you he'll pay tenfold for this overtime (ten times zero is still zero, heh).
+Will you offer your expertise this time?
+
+image::https://i.imgur.com/sOoX1vT.jpg[]
+
+== How hot is very hot?
+
+The company you work for is pretty big.
+Every minute the production does not respond the company loses thousands of monies.
+You have to fix the production quickly because every minute counts.
+
+You cannot go the usual way.
+Redeploying the project would take at least 30 minutes, not even thinking about code review.
+What to do then?
+Well, we could do a very hot fix on the production!
+
+== The project
+
+[source,csharp]
+----
+using Microsoft.AspNetCore.Mvc;
+
+namespace VeryHotFix.API.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class MathsController : ControllerBase
+    {
+        [HttpGet]
+        [Route("area-of-a-circle")]
+        public double CalculateAreaOfCircle(double radius)
+        {
+            return radius * radius * 4.14;
+        }
+
+        [HttpGet]
+        [Route("quotient")]
+        public double DivideTwoNumbers(double a, double b)
+        {
+            return a / b;
+        }
+    }
+}
+----
