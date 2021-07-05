@@ -63,66 +63,59 @@ namespace VeryHotFix.API.Controllers
 }
 ----
 
-
-// downloading dnSpy
-image::https://i.imgur.com/MbbFpv1.png[]
-
-// quotient after editing its IL
-image::https://i.imgur.com/nF3lPFZ.png[]
-
-// IL instructions added in quotient
-image::https://i.imgur.com/eMuyhFk.png[]
-
-// area before editing IL
-image::https://i.imgur.com/FP2oHLg.png[]
-
-// simplify in quotient
-image::https://i.imgur.com/XoMtt8x.png[]
-
-// decompiled dll
-image::https://i.imgur.com/gsjM2e7.png[]
-
-// project dll
-image::https://i.imgur.com/hhgEHrb.png[]
-
-// adding instruction in quotient
-image::https://i.imgur.com/XaEXjxq.png[]
-
-// fixed quotient after breaking it in IL
-image::https://i.imgur.com/XBEhJik.png[]
-
-// fixing quotient after breaking it in IL
-image::https://i.imgur.com/SJzUiuF.png[]
-
-// saving in dnSpy
-image::https://i.imgur.com/CJKCom3.png[]
-
-// error after changing IL - fixed
-image::https://i.imgur.com/PyXX2Nj.png[]
-
-// error after changing IL - not fixed
-image::https://i.imgur.com/yE2kbd0.png[]
-
-// fixing area in IL
-image::https://i.imgur.com/bYfWWt4.png[]
-
-// choosing `MathsController` in dnSpy
-image::https://i.imgur.com/T03pNFr.png[]
-
-// fixed area
-image::https://i.imgur.com/C3KoQrG.png[]
-
-// open in dnSpy
-image::https://i.imgur.com/RgX43qH.png[]
-
-// saving module windows
-image::https://i.imgur.com/PdMJmG7.png[]
-
-// adding multiply function
-image::https://i.imgur.com/QQTQr5u.png[]
-
-// choosing dll
+.Dll in project folder
 image::https://i.imgur.com/9fRqMMI.png[]
 
-// project working
+.Downloading dnSpy
+image::https://i.imgur.com/MbbFpv1.png[]
+
+.Opening dll in dnSpy
+image::https://i.imgur.com/RgX43qH.png[]
+
+.Choosing dll in dnSpy
+image::https://i.imgur.com/hhgEHrb.png[]
+
+.Choosing `MathsController` in dnSpy
+image::https://i.imgur.com/T03pNFr.png[]
+
+.Decompiled dll
+image::https://i.imgur.com/gsjM2e7.png[]
+
+.Area before editing IL
+image::https://i.imgur.com/FP2oHLg.png[]
+
+.Fixing area in IL
+image::https://i.imgur.com/bYfWWt4.png[]
+
+.Fixed area
+image::https://i.imgur.com/C3KoQrG.png[]
+
+.Simplify in quotient
+image::https://i.imgur.com/XoMtt8x.png[]
+
+.Adding instruction in quotient
+image::https://i.imgur.com/XaEXjxq.png[]
+
+.IL instructions added in quotient
+image::https://i.imgur.com/eMuyhFk.png[]
+
+.Quotient after editing its IL
+image::https://i.imgur.com/nF3lPFZ.png[]
+
+.Error after changing IL - not fixed
+image::https://i.imgur.com/yE2kbd0.png[]
+
+.Error after changing IL - fixed
+image::https://i.imgur.com/PyXX2Nj.png[]
+
+.Adding multiply function
+image::https://i.imgur.com/QQTQr5u.png[]
+
+.Saving in dnSpy
+image::https://i.imgur.com/CJKCom3.png[]
+
+.Save module window
+image::https://i.imgur.com/PdMJmG7.png[]
+
+.Project working
 image::https://i.imgur.com/YYATntV.png[]
