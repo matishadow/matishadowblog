@@ -29,6 +29,10 @@ pre[class*="language-"] {
   hyphens: none;
   
   max-width: 800px;
+
+  @media (max-width: 900px) {
+    max-width: 600px;
+  }
 }
 
 /* Code blocks */
