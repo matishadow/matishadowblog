@@ -21,7 +21,6 @@ disqusShortname = "matishadow-blog"
 [languages]
   [languages.en]
     title = "Security and programming stuff"
-    subtitle = "A simple theme for Hugo"
     keywords = ""
     copyright = ""
     readOtherPosts = "Read other posts"
