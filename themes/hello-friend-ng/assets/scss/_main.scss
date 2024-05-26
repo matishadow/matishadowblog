@@ -219,6 +219,7 @@ code {
   border-radius: 5px;
   font-size: 0.95rem;
   // Default
+  overflow-wrap: break-word;
   background: $light-background-secondary;
 
   @media (prefers-color-scheme: dark) {
