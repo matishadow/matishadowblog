@@ -21,9 +21,7 @@ disqusShortname = "matishadow-blog"
 [languages]
   [languages.en]
     title = "Security and programming stuff"
-    keywords = ""
     copyright = ""
-    readOtherPosts = "Read other posts"
 
     [languages.en.params.logo]
       logoText = "matishadow's blog"
