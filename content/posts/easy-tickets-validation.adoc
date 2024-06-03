@@ -8,7 +8,7 @@ comments: true
 ---
 
 = Easy ticket validation 
-:imagesdir: /easy-ticket-validation
+:imagesdir: /matishadowblog/easy-ticket-validation
 
 
 .QR Codes generation
