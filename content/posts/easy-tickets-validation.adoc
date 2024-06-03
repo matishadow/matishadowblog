@@ -1,0 +1,66 @@
+---
+title: "Easy ticket validation 🎫"
+date: 2024-06-03
+draft: false
+tags: ["programming", "security", "python", "qrcodes", "flipper-zero"]
+:toc:
+comments: true
+---
+
+= Easy ticket validation 
+:imagesdir: /easy-ticket-validation
+
+
+.QR Codes generation
+[source,python]
+----
+code_names = {'M19101': 'Kabaty',
+              'M19102': 'Natolin',
+              'M19103': '0 Imielin',  # prepend 0 to make it appear at the top
+              'M19104': 'Stoklosy',
+              'M19105': 'Ursynow',
+              'M19106': 'Sluzew',
+              'M19107': '0 Wilanowska',  # prepend 0 to make it appear at the top
+              'M19108': 'Wierzbno',
+              'M19109': 'Raclawicka',
+              'M19110': 'Pole Mokotowskie',
+              'M19111': 'Politechnika',
+              'M19113': 'Centrum',
+              'M19114': 'Swietokrzyska',
+              'M19115': 'Ratusz Arsenal',
+              'M19117': 'Dworzec Gdanski',
+              'M19118': 'Plac Wilsona',
+              'M19119': 'Marymont',
+              'M19120': 'Slodowiec',
+              'M19121': 'Stare Bielany',
+              'M19122': 'Wawrzyszew',
+              'M19123': 'Mlociny'}
+
+# example qr code:
+# WTPWarszawa_M19123
+
+
+file_first_line = 'Filetype: QRCode\n'
+file_second_line = 'Version: 0\n'
+file_message_prefix = 'Message: WTPWarszawa_'
+
+for code, name in code_names.items():
+    f = open('qrcodes/' + name + '.qrcode', "w")
+
+    f.write(file_first_line)
+    f.write(file_second_line)
+    f.write(file_message_prefix + code)
+
+    f.close()
+----
+
+image::1.jpg[]
+image::2.jpg[]
+image::3.jpg[]
+image::4.jpg[]
+image::5.jpg[]
+
+
+image::22.png[]
+image::11.png[]
+image::33.png[]
