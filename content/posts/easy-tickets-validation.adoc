@@ -10,6 +10,12 @@ comments: true
 = Easy ticket validation 
 :imagesdir: /matishadowblog/easy-ticket-validation
 
+// Intro - explain why validation sucks
+// Recon - scanning, searching google
+// Second device?
+// Flipper zero qr codes + script
+// Final result + maybe vid of validation 
+
 
 .QR Codes generation
 [source,python]
