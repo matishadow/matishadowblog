@@ -73,4 +73,4 @@ image::22.png[]
 image::11.png[]
 image::33.png[]
 
-video::demo-qr.mp4[]
+video::demo-qr.mp4[width=455]
