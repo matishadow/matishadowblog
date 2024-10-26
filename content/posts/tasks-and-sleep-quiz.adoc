@@ -52,10 +52,21 @@ Lastly, we have this `Main`, where we just run the `DoTheMath` method.
 
 == The question
 
-The interviewer asked me
+The interviewer asked me what number will be printed out,
+after we run this program.
+Running it? What do you mean?
+This code is so bad, that before running it I'd definitely refactor it first.
+
+There are a couple of things wrong in this code.
+
+* We use `Thread.Sleep(3000)` in an `async` method.
++
+This blocks the current thread, preventing it from 
+doing some other useful work in the meantime.
 
 
-video::GQYd6MWKiLI[youtube]
+
+video::GQYd6MWKiLI[youtube, width=100%]
 
 
 // Running the code
