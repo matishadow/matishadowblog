@@ -122,8 +122,26 @@ Okay, now it's `8` or `11` or sometimes even `16`.
 
 image::r4.png[]
 
-
 == My attempt at explanation
 
+=== Async/Await talk
+
+I won't be giving you a full deep dive 
+on how async await works inside.
+I'll only explain what's needed for this post.
+For more information, checked this talk from NDC conference.
+
 video::GQYd6MWKiLI[youtube, width=100%, height=320]
+
+=== How the code really looks
+
+Firstly, let's see how our code looks after it's 'compiled'.
+We'll paste it into this website:
+https://sharplab.io
+and check it out.
+
+This is all the code generated for the `DoubleValue` method.
+
+image::decomp.png[]
+
 
