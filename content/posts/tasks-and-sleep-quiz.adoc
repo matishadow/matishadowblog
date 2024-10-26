@@ -64,12 +64,12 @@ There are a couple of things wrong in this code.
 This blocks the current thread, preventing it from 
 doing some other useful work in the meantime.
 +
-
+If you need to execute soem 
 https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.delay?view=net-8.0[`Task.Delay`]
 
 
 
-video::GQYd6MWKiLI[youtube, width=100%, height=640]
+video::GQYd6MWKiLI[youtube, width=100%, height=320]
 
 
 // Running the code
