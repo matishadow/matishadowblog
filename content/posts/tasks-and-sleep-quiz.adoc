@@ -34,7 +34,7 @@ a bit more, and I'll tell you what I found out!
 
 == The code
 
-image::number.png[float="left",align="left"]
+image::number.png[]
 
 Firstly, we have this small `Number` class,
 which just stores an `int` value.
