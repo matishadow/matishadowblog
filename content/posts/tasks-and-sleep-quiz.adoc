@@ -92,7 +92,38 @@ So let's run it!
 
 == Running the code
 
-== My attempt at explaination
+=== Attempt 1
+Firstly let's run the code as it is, without debugging.
+
+image::a1.png[]
+
+Okay, `11` it is.
+The first number, `3` got doubled, and `5` did not.
+`6` + `5` is `11`. 
+
+Makes sense I guess.
+
+=== Attempt 2
+
+Now, let's run it with debugger attached.
+
+image::a2.png[]
+
+Now it's `16`, so both numbers got doubled.
+
+=== Attempt 3 (Bonus)
+
+I assume this weirdness has to do something with the `Thread.Sleep`,
+so let's remove it and run the code 100 times without debugger.
+
+image::a3.png[]
+
+Okay, now it's `8` or `11` or sometimes even `16`.
+
+image::r4.png[]
+
+
+== My attempt at explanation
 
 video::GQYd6MWKiLI[youtube, width=100%, height=320]
 
