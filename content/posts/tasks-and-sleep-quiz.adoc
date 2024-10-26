@@ -64,15 +64,35 @@ There are a couple of things wrong in this code.
 This blocks the current thread, preventing it from 
 doing some other useful work in the meantime.
 +
-If you need to execute soem 
+If you need to execute some logic after given time,
+in an `async` method you should use
 https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.delay?view=net-8.0[`Task.Delay`]
+method, which doesn't block the thread.
+
+* This `DoubleValue` method is not awaited.
++
+image::not-awaited.png[]
++
+It could result in the program finishing,
+before the method completing fully.
++
+Always use `await` keyword when working with `async` methods.
+If you need 'Fire and Forget' mechanism, 
+take a look at this `SafeFireAndForget` method from this https://www.nuget.org/packages/AsyncAwaitBestPractices/[AsynAwaitBestPractices] nuget package.
 
 
+But, let's assume we cannot change this code.
+What was my answer then?
+
+[quote]
+I don't know, maybe the program would print `8`.
+I would have to run it to fully understand it.
+
+So let's run it!
+
+== Running the code
+
+== My attempt at explaination
 
 video::GQYd6MWKiLI[youtube, width=100%, height=320]
-
-
-// Running the code
-
-// Explaination
 
