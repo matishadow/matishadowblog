@@ -144,4 +144,12 @@ This is all the code generated for the `DoubleValue` method.
 
 image::decomp.png[]
 
+I know it's a lot, but bear with me.
 
+Reading from the top, we have a new class generated for this method,
+which is a state machine.
+It is used to keep track of the state of this `async` method.
+In the first iteration of this state machine,
+we schedule some work to be run on something called `ThreadPool`,
+and return the task.
+Thanks to this state machine
