@@ -1,5 +1,5 @@
 ---
-title: "Tasks and Sleep Quiz 🤔"
+title: ".NET Tasks and Sleep Quiz 🤔"
 date: 2024-10-26
 draft: false
 tags: ["programming", "async", "await", "tasks", "c#", ".net"]
@@ -7,71 +7,52 @@ tags: ["programming", "async", "await", "tasks", "c#", ".net"]
 comments: true
 ---
 
-= Tasks and Sleep Quiz
+= .NET Tasks and Sleep Quiz
 :imagesdir: /matishadowblog/easy-ticket-validation
 
-// Intro - explain why validation sucks
-// Recon - scanning, searching google
-// Second device?
-// Flipper zero qr codes + script
-// Final result + maybe vid of validation 
+== Intro
+
+Some time ago I attended a job interview (as a candidate!).
+After some chit-chat and non-technical questions,
+I got to the technical part.
+They presented a couple of code fragments and asked 
+me what the output will be.
+
+I personally think this type of questions suck.
+You don't have a computer? 
+Just run the damn thing, and you'll know, 
+why do you need to ask me.
+But that's a rant for another time.
+
+Anyway, I answered most of the questions,
+but one got me pretty angry.
+The code used `Tasks` and `Thread.Sleep` in combination.
+I thought I knew these topics pretty well, until that day.
+
+After the interview, I decided to research this topic 
+a bit more, and I'll tell you what I found out!
+
+== The code
+
+image::number.png[]
+
+Firstly, we have this small `Number` class,
+which just stores an `int` value.
+
+image::do-the-math.png[]
+
+Then we have this `AsyncTask` class with `DoTheMath` method.
+It also has `DoubleValue` method, which is marked as `async` 
+and return a `Task`.
+Cool, cool.
+
+image::main.png[]
+
+Lastly, we have this `Main`, where we just run the `DoTheMath` method.
 
 
-.code test
-[source,c#]
-----
-namespace ConsoleApp9;
 
-internal class Number
-{
-    public int Value { get; set; }
-}
+// Running the code
 
-internal class AsyncTask
-{
-    public void DoTheMath()
-    {
-        var number1 = new Number { Value = 3 };
-        var number2 = new Number { Value = 5 };
+// Explaination
 
-        DoubleValue(number1);
-        DoubleValue(number2);
-
-        Console.WriteLine(number1.Value + number2.Value);
-    }
-
-    // Let's assume it's third-party code and we can't change it
-    private async Task DoubleValue(Number number)
-    {
-        Thread.Sleep(3000);
-        await Task.Run(() =>
-        {
-            number.Value *= 2;
-        });
-    }
-}
-
-class Program
-{
-    static void Main(string[] args)
-    {
-        var t = new AsyncTask();
-        t.DoTheMath();
-    }
-}
-----
-
-image::bramka.jpg[]
-
-image::1.jpg[]
-image::2.jpg[]
-image::3.jpg[]
-image::4.jpg[]
-image::5.jpg[]
-
-
-image::22.png[]
-image::11.png[]
-image::33.png[]
-
-video::demo-qr.mp4[width=760]
