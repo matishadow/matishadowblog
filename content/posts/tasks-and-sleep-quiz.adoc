@@ -74,11 +74,11 @@ method, which doesn't block the thread.
 image::not-awaited.png[]
 +
 It could result in the program finishing,
-before the method completing fully.
+before the method fully completes.
 +
 Always use `await` keyword when working with `async` methods.
 If you need 'Fire and Forget' mechanism, 
-take a look at this `SafeFireAndForget` method from this https://www.nuget.org/packages/AsyncAwaitBestPractices/[AsynAwaitBestPractices] nuget package.
+take a look at this `SafeFireAndForget` method from this https://www.nuget.org/packages/AsyncAwaitBestPractices/[AsyncAwaitBestPractices] nuget package.
 
 
 But, let's assume we cannot change this code.
@@ -86,6 +86,7 @@ What was my answer then?
 
 [quote]
 I don't know, maybe the program would print `8`.
+I'm not sure on which thread `Thread.Sleep` will run.
 I would have to run it to fully understand it.
 
 So let's run it!
@@ -114,7 +115,7 @@ Now it's `16`, so both numbers got doubled.
 === Attempt 3 (Bonus)
 
 I assume this weirdness has to do something with the `Thread.Sleep`,
-so let's remove it and run the code 100 times without debugger.
+so let's remove it and run the code 100 times without the debugger.
 
 image::a3.png[]
 
@@ -122,7 +123,7 @@ Okay, now it's `8` or `11` or sometimes even `16`.
 
 image::r4.png[]
 
-This one seems totally random.
+This one seems almost totally random.
 
 == My attempt at explanation
 
@@ -131,7 +132,7 @@ This one seems totally random.
 I won't be giving you a full deep dive 
 on how async await works inside.
 I'll only explain what's needed for this post.
-For more information, checked this talk from NDC conference.
+For more information, check out this talk from NDC conference.
 
 video::GQYd6MWKiLI[youtube, width=100%, height=320]
 
@@ -140,7 +141,7 @@ video::GQYd6MWKiLI[youtube, width=100%, height=320]
 Firstly, let's see how our code looks after it's 'compiled'.
 We'll paste it into this website:
 https://sharplab.io
-and check it out.
+and read the generated version.
 
 This is all the code generated for the `DoubleValue` method.
 
@@ -157,7 +158,7 @@ we schedule some work to be run on something called `ThreadPool`,
 and return the task.
 Thanks to this state machine, the runtime will know
 where to jump back in the method, when the scheduled work is finished.
-By where I mean the `else` block.
+By where I mean the `else` block in our example.
 
 === Attempt 1 explained
 
@@ -172,12 +173,14 @@ Let's see how it works step by step.
 
 a|
 image::code.png[]
+image::do-the-math-compiled.png[]
+image::code-compiled.png[]
 
 a|
 . We enter the `DoTheMath` method.
 . We create two numbers, one with value `3`, and one with `5`.
 . We enter the `DoubleValue` method.
-.. We set the state of the state machine to `-` and start it.
+.. We set the state of the state machine to `-1` and start it.
 .. In `MoveNext` we enter the `if` because `num != 0`.
 .. We sleep for 3 seconds in the main thread.
 .. Using `Task.Run` we schedule some work to `ThreadPool` (probably a different thread).
