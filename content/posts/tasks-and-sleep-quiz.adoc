@@ -159,7 +159,7 @@ Thanks to this state machine, the runtime will know
 where to jump back in the method, when the scheduled work is finished.
 By where I mean the `else` block.
 
-=== Attempt 1 and 2 explained
+=== Attempt 1 explained
 
 Now that we know how it looks on the inside,
 we could try to reason why it works as it works.
@@ -174,12 +174,47 @@ a|
 image::code.png[]
 
 a|
-. aaw
-. awdaw
+. We enter the `DoTheMath` method.
+. We create two numbers, one with value `3`, and one with `5`.
+. We enter the `DoubleValue` method.
+.. We set the state of the state machine to `-` and start it.
+.. In `MoveNext` we enter the `if` because `num != 0`.
+.. We sleep for 3 seconds in the main thread.
+.. Using `Task.Run` we schedule some work to `ThreadPool` (probably a different thread).
+.. Since the work is not completed yet we return from `MoveNext`.
+.. And lastly we return a `Task`.
+. We enter another `DoubleValue` and do the same steps (including waiting 3 seconds).
+. We print the sum of the numbers.
 |===
 
+**The important observation is that 
+this second `Thread.Sleep(3000)`
+guarantees that the first action of doubling completes 
+before printing the sum.**
+The second action is not awaited in any way,
+so it doesn't have the chance to finish before printing the sum.
+And that's why we see `11`.
 
-==== Why difference when debugger is attached?
+==== Attempt 2 
 
+Okay but why when the debugger is attached we see `16`?
+Well, I'm not sure to be honest.
+I can only assume that it's because the debugger makes the program slower.
+When it's slowed down, the doubling action has the time to finish
+on a separate thread,
+before we print the number to the console.
 
 === Attempt 3 explained
+
+Without the `Thread.Sleep`, 
+we basically have a race condition
+between first doubling, second doubling, and printing to the console.
+The order of them finishing is quite random, so the result is also
+quite random.
+
+== Conclusion
+
+Despite not liking this task as a job interview question,
+I enjoyed digging deeper into async programming because of it.
+And I do recommend attending job interview for this sole purpose,
+even if you're not looking to change your job!
