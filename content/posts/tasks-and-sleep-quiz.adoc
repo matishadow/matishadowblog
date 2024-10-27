@@ -122,6 +122,8 @@ Okay, now it's `8` or `11` or sometimes even `16`.
 
 image::r4.png[]
 
+This one seems totally random.
+
 == My attempt at explanation
 
 === Async/Await talk
@@ -149,7 +151,35 @@ I know it's a lot, but bear with me.
 Reading from the top, we have a new class generated for this method,
 which is a state machine.
 It is used to keep track of the state of this `async` method.
+The state is represented by the `num` variable.
 In the first iteration of this state machine,
 we schedule some work to be run on something called `ThreadPool`,
 and return the task.
-Thanks to this state machine
+Thanks to this state machine, the runtime will know
+where to jump back in the method, when the scheduled work is finished.
+By where I mean the `else` block.
+
+=== Attempt 1 and 2 explained
+
+Now that we know how it looks on the inside,
+we could try to reason why it works as it works.
+
+Let's see how it works step by step.
+
+
+|===
+|Code|Steps
+
+a|
+image::code.png[]
+
+a|
+. aaw
+. awdaw
+|===
+
+
+==== Why difference when debugger is attached?
+
+
+=== Attempt 3 explained
