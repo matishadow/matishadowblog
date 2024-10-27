@@ -203,7 +203,7 @@ And that's why we see `11`.
 Okay but why when the debugger is attached we see `16`?
 Well, I'm not sure to be honest.
 I can only assume that it's because the debugger makes the program slower.
-When it's slowed down, the doubling action has the time to finish
+When it's slowed down, the second doubling action has the time to finish
 on a separate thread,
 before we print the number to the console.
 
@@ -220,4 +220,4 @@ quite random.
 Despite not liking this task as a job interview question,
 I enjoyed digging deeper into async programming because of it.
 And I do recommend attending job interview for this sole purpose,
-even if you're not looking to change your job!
+even if you're not looking to change your job any soon!
