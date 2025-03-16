@@ -59,9 +59,9 @@ https://www.ztm.waw.pl/wp-content/uploads/2021/03/Za%C5%82%C4%85czniki-do-umowy-
 
 It contains all the code for all the stations.
 
-image::../../static/easy-ticket-validation/image-2025-03-16-19-00-19-570.png[]
+image::image-2025-03-16-19-00-19-570.png[]
 
-So jackpot I guess.
+So jackpot, I guess.
 Now we can generate the QR codes for all the stations,
 and have them at hand to validate.
 
@@ -91,7 +91,6 @@ https://github.com/bmatcuk/flipperzero-qrcode
 It requires QR code data to be provided in the form
 of a file with `.qrcode` extension.
 
-.example.qrcode
 [source]
 ----
 Filetype: QRCode
